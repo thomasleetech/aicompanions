@@ -1,5 +1,11 @@
 RewriteEngine On
 
-# Redirect everything to the public directory
-RewriteCond %{REQUEST_URI} !^/public/
+# Skip install.php - let it run directly
+RewriteRule ^install\.php$ - [L]
+
+# Serve existing files from public/ directly (CSS, JS, images)
+RewriteCond %{DOCUMENT_ROOT}/public%{REQUEST_URI} -f
 RewriteRule ^(.*)$ public/$1 [L]
+
+# Everything else goes to the front controller
+RewriteRule ^(.*)$ public/index.php [QSA,L]

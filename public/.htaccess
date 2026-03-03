@@ -1,7 +1,8 @@
 RewriteEngine On
-RewriteBase /
 
-# Redirect to front controller
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
+# Serve existing files directly (CSS, JS, images, uploads)
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^ - [L]
+
+# Everything else routes to the front controller
 RewriteRule ^(.*)$ index.php [QSA,L]
