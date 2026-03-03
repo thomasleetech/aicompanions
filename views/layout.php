@@ -7,24 +7,25 @@
     <meta name="description" content="<?= View::e($pageDesc ?? 'Meet your AI companion. Real conversations. Zero judgment. Available 24/7.') ?>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/app.css">
+    <link rel="stylesheet" href="<?= url('css/app.css') ?>">
     <?= CSRF::metaTag() ?>
+    <script>const BASE = '<?= BASE_URL ?>';</script>
 </head>
 <body>
     <header id="header">
-        <a href="/" class="logo">
+        <a href="<?= url('/') ?>" class="logo">
             <div class="logo-icon">C</div>
             <span>Companion</span>
         </a>
         <nav id="nav">
-            <a href="/browse">Browse</a>
-            <a href="/browse/ai-girlfriend">Girlfriends</a>
-            <a href="/browse/ai-boyfriend">Boyfriends</a>
+            <a href="<?= url('browse') ?>">Browse</a>
+            <a href="<?= url('browse/ai-girlfriend') ?>">Girlfriends</a>
+            <a href="<?= url('browse/ai-boyfriend') ?>">Boyfriends</a>
             <?php if (isset($user) && $user): ?>
-                <a href="/app" class="btn btn-primary">Open App</a>
+                <a href="<?= url('app') ?>" class="btn btn-primary">Open App</a>
             <?php else: ?>
-                <a href="/login" class="btn btn-ghost">Log In</a>
-                <a href="/register" class="btn btn-primary">Get Started</a>
+                <a href="<?= url('login') ?>" class="btn btn-ghost">Log In</a>
+                <a href="<?= url('register') ?>" class="btn btn-primary">Get Started</a>
             <?php endif; ?>
         </nav>
         <button class="mobile-menu-btn" onclick="document.getElementById('nav').classList.toggle('open')">
@@ -47,20 +48,20 @@
             </div>
             <div class="footer-col">
                 <h4>Product</h4>
-                <a href="/browse">Browse Companions</a>
-                <a href="/#pricing">Pricing</a>
-                <a href="/#features">Features</a>
+                <a href="<?= url('browse') ?>">Browse Companions</a>
+                <a href="<?= url('#pricing') ?>">Pricing</a>
+                <a href="<?= url('#features') ?>">Features</a>
             </div>
             <div class="footer-col">
                 <h4>Explore</h4>
-                <a href="/browse/ai-girlfriend">AI Girlfriends</a>
-                <a href="/browse/ai-boyfriend">AI Boyfriends</a>
-                <a href="/browse/someone-to-talk-to">Someone to Talk To</a>
+                <a href="<?= url('browse/ai-girlfriend') ?>">AI Girlfriends</a>
+                <a href="<?= url('browse/ai-boyfriend') ?>">AI Boyfriends</a>
+                <a href="<?= url('browse/someone-to-talk-to') ?>">Someone to Talk To</a>
             </div>
             <div class="footer-col">
                 <h4>Legal</h4>
-                <a href="/terms">Terms of Service</a>
-                <a href="/privacy">Privacy Policy</a>
+                <a href="<?= url('terms') ?>">Terms of Service</a>
+                <a href="<?= url('privacy') ?>">Privacy Policy</a>
             </div>
         </div>
         <div class="footer-bottom">
@@ -68,6 +69,6 @@
         </div>
     </footer>
 
-    <script src="/js/app.js"></script>
+    <script src="<?= url('js/app.js') ?>"></script>
 </body>
 </html>

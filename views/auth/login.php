@@ -20,7 +20,7 @@
         </form>
 
         <p class="auth-footer">
-            Don't have an account? <a href="/register">Sign up free</a>
+            Don't have an account? <a href="<?= url('register') ?>">Sign up free</a>
         </p>
     </div>
 </section>
@@ -36,11 +36,11 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     btn.textContent = 'Logging in...';
 
     try {
-        const res = await fetch('/api/auth/login', { method: 'POST', body: new FormData(form) });
+        const res = await fetch(BASE + '/api/auth/login', { method: 'POST', body: new FormData(form) });
         const data = await res.json();
 
         if (data.success) {
-            window.location.href = '/app';
+            window.location.href = BASE + '/app';
         } else {
             errorEl.textContent = data.message || 'Login failed';
             errorEl.style.display = 'block';

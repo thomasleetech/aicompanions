@@ -8,7 +8,7 @@
         <h1>An AI that<br><span class="gradient-text">actually gets you</span></h1>
         <p>No judgment. No waiting. Just real conversation with an AI companion who remembers you, supports you, and is always there.</p>
         <div class="hero-cta">
-            <a href="/register" class="btn btn-primary btn-lg">Start Chatting Free &rarr;</a>
+            <a href="<?= url('register') ?>" class="btn btn-primary btn-lg">Start Chatting Free &rarr;</a>
             <a href="#features" class="btn btn-ghost btn-lg">See How It Works</a>
         </div>
 
@@ -87,7 +87,7 @@
     </div>
     <div class="companions-scroll">
         <?php foreach (array_slice($companions, 0, 6) as $c): ?>
-        <a href="/companion/<?= $c['id'] ?>" class="companion-card">
+        <a href="<?= url('companion/' . $c['id']) ?>" class="companion-card">
             <img src="<?= View::e($c['image_url']) ?>" class="companion-img" alt="<?= View::e($c['display_name'] ?? $c['title']) ?>" loading="lazy">
             <div class="companion-info">
                 <h4><?= View::e($c['display_name'] ?? '') ?></h4>
@@ -108,7 +108,7 @@
         <?php endforeach; ?>
     </div>
     <div style="text-align:center;margin-top:32px">
-        <a href="/browse" class="btn btn-ghost">Browse All Companions &rarr;</a>
+        <a href="<?= url('browse') ?>" class="btn btn-ghost">Browse All Companions &rarr;</a>
     </div>
 </section>
 
@@ -127,7 +127,7 @@
                 <li>Browse all companions</li>
                 <li>Basic chat features</li>
             </ul>
-            <a href="/register" class="btn btn-ghost" style="width:100%">Get Started</a>
+            <a href="<?= url('register') ?>" class="btn btn-ghost" style="width:100%">Get Started</a>
         </div>
         <div class="price-card featured">
             <div class="price-name">Monthly</div>
@@ -140,7 +140,7 @@
                 <li>Memory & context</li>
                 <li>Priority response</li>
             </ul>
-            <a href="/register" class="btn btn-primary" style="width:100%">Subscribe Now</a>
+            <a href="<?= url('register') ?>" class="btn btn-primary" style="width:100%">Subscribe Now</a>
         </div>
         <div class="price-card">
             <div class="price-name">Pay As You Go</div>
@@ -152,7 +152,7 @@
                 <li>All features included</li>
                 <li>Time never expires</li>
             </ul>
-            <a href="/register" class="btn btn-ghost" style="width:100%">Buy Time</a>
+            <a href="<?= url('register') ?>" class="btn btn-ghost" style="width:100%">Buy Time</a>
         </div>
     </div>
 </section>
@@ -160,5 +160,5 @@
 <section class="cta-section">
     <h2>Ready to meet your companion?</h2>
     <p>Start free. No credit card required.</p>
-    <a href="/register" class="btn btn-primary btn-lg">Get Started Free &rarr;</a>
+    <a href="<?= url('register') ?>" class="btn btn-primary btn-lg">Get Started Free &rarr;</a>
 </section>

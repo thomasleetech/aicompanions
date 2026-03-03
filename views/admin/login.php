@@ -22,7 +22,7 @@
 document.getElementById('adminLoginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const fd = new FormData(e.target);
-    const res = await fetch('/api/admin/login', { method: 'POST', body: fd });
+    const res = await fetch(BASE + '/api/admin/login', { method: 'POST', body: fd });
     const data = await res.json();
     if (data.success) window.location.reload();
     else {

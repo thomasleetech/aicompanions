@@ -43,7 +43,7 @@
             </div>
         <?php endif; ?>
         <?php foreach ($companions as $c): ?>
-        <a href="/companion/<?= $c['id'] ?>" class="companion-card">
+        <a href="<?= url('companion/' . $c['id']) ?>" class="companion-card">
             <img src="<?= View::e($c['image_url']) ?>" class="companion-img" alt="<?= View::e($c['display_name'] ?? '') ?>" loading="lazy">
             <div class="companion-info">
                 <div class="companion-header">
@@ -82,6 +82,6 @@ function applyFilters() {
         sort: document.getElementById('filterSort').value,
         search: document.getElementById('filterSearch').value,
     });
-    window.location.href = '/browse?' + params.toString();
+    window.location.href = BASE + '/browse?' + params.toString();
 }
 </script>

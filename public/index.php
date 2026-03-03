@@ -27,12 +27,22 @@ spl_autoload_register(function (string $class) {
     }
 });
 
+// Detect base URL path (e.g. '/aicompanions' when app lives in a subdirectory)
+// SCRIPT_NAME is '/aicompanions/public/index.php' → we want '/aicompanions'
+$scriptDir = dirname(dirname($_SERVER['SCRIPT_NAME']));
+define('BASE_URL', $scriptDir === '/' || $scriptDir === '\\' ? '' : rtrim($scriptDir, '/'));
+
+// Helper function for views - generates correct URLs regardless of subdirectory
+function url(string $path = ''): string {
+    return BASE_URL . '/' . ltrim($path, '/');
+}
+
 // Boot
 Env::load(BASE_PATH);
 
 // Only connect to DB if .env exists (otherwise installer hasn't run yet)
 if (!file_exists(BASE_PATH . '/.env') || !Env::get('DB_NAME')) {
-    header('Location: ' . dirname($_SERVER['SCRIPT_NAME']) . '/../install.php');
+    header('Location: ' . BASE_URL . '/install.php');
     exit;
 }
 

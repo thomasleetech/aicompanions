@@ -1,11 +1,10 @@
 RewriteEngine On
 
-# Skip install.php - let it run directly
+# Skip install.php
 RewriteRule ^install\.php$ - [L]
 
-# Serve existing files from public/ directly (CSS, JS, images)
-RewriteCond %{DOCUMENT_ROOT}/public%{REQUEST_URI} -f
-RewriteRule ^(.*)$ public/$1 [L]
+# Route static assets to public/ directory
+RewriteRule ^(css|js|uploads)(/.*)?$ public/$1$2 [L]
 
 # Everything else goes to the front controller
 RewriteRule ^(.*)$ public/index.php [QSA,L]

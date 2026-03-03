@@ -68,11 +68,11 @@
                 </div>
 
                 <?php if (isset($user) && $user): ?>
-                    <a href="/chat/<?= $gig['id'] ?>" class="btn btn-primary btn-block">
+                    <a href="<?= url('chat/' . $gig['id']) ?>" class="btn btn-primary btn-block">
                         <?= $hasAccess ? 'Continue Chatting' : 'Try 3 Free Messages' ?>
                     </a>
                 <?php else: ?>
-                    <a href="/register" class="btn btn-primary btn-block">Sign Up to Chat</a>
+                    <a href="<?= url('register') ?>" class="btn btn-primary btn-block">Sign Up to Chat</a>
                 <?php endif; ?>
 
                 <div class="detail-info-list">

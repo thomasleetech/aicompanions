@@ -3,7 +3,7 @@
 <section class="admin-section">
     <div class="admin-header">
         <h1>Admin Dashboard</h1>
-        <a href="/admin/logout" class="btn btn-sm btn-ghost">Logout</a>
+        <a href="<?= url('admin/logout') ?>" class="btn btn-sm btn-ghost">Logout</a>
     </div>
 
     <!-- Stats -->
@@ -73,7 +73,7 @@ async function adminPost(url, data = {}) {
     const fd = new FormData();
     fd.append('_token', CSRF);
     Object.entries(data).forEach(([k, v]) => fd.append(k, v));
-    const res = await fetch(url, { method: 'POST', body: fd });
+    const res = await fetch(BASE + url, { method: 'POST', body: fd });
     return res.json();
 }
 
@@ -168,7 +168,6 @@ function esc(str) {
     return d.innerHTML;
 }
 
-// Init
 loadStats();
 loadUsers();
 </script>

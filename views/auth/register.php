@@ -27,7 +27,7 @@
         </form>
 
         <p class="auth-footer">
-            Already have an account? <a href="/login">Log in</a>
+            Already have an account? <a href="<?= url('login') ?>">Log in</a>
         </p>
     </div>
 </section>
@@ -43,11 +43,11 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
     btn.textContent = 'Creating account...';
 
     try {
-        const res = await fetch('/api/auth/register', { method: 'POST', body: new FormData(form) });
+        const res = await fetch(BASE + '/api/auth/register', { method: 'POST', body: new FormData(form) });
         const data = await res.json();
 
         if (data.success) {
-            window.location.href = '/app';
+            window.location.href = BASE + '/app';
         } else {
             errorEl.textContent = data.message || 'Registration failed';
             errorEl.style.display = 'block';

@@ -7,13 +7,14 @@ function getCsrf() {
     return document.querySelector('meta[name="csrf-token"]')?.content || '';
 }
 
-// API helper
+// API helper - automatically prepends BASE path
 async function api(url, data = {}) {
     const fd = new FormData();
     fd.append('_token', getCsrf());
     Object.entries(data).forEach(([k, v]) => fd.append(k, v));
 
-    const res = await fetch(url, { method: 'POST', body: fd });
+    const fullUrl = (typeof BASE !== 'undefined' ? BASE : '') + url;
+    const res = await fetch(fullUrl, { method: 'POST', body: fd });
     return res.json();
 }
 

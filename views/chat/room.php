@@ -1,13 +1,13 @@
 <?php
 $pageTitle = View::e($gig['display_name'] ?? 'Chat') . ' - Companion';
-$pageLayout = 'chat'; // Signal to use minimal layout
+$pageLayout = 'chat';
 ?>
 
 <section class="chat-section">
     <div class="chat-layout">
         <!-- Chat Header -->
         <div class="chat-header">
-            <a href="/app" class="chat-back">&larr;</a>
+            <a href="<?= url('app') ?>" class="chat-back">&larr;</a>
             <img src="<?= View::e($gig['image_url'] ?? '') ?>" alt="" class="chat-avatar">
             <div class="chat-header-info">
                 <h3><?= View::e($gig['display_name'] ?? $gig['title']) ?></h3>
@@ -51,14 +51,13 @@ const CSRF = document.querySelector('meta[name="csrf-token"]')?.content || '';
 let voiceEnabled = false;
 let sending = false;
 
-// Load chat history
 async function loadHistory() {
     try {
         const fd = new FormData();
         fd.append('gig_id', GIG_ID);
         fd.append('_token', CSRF);
 
-        const res = await fetch('/api/chat/history', { method: 'POST', body: fd });
+        const res = await fetch(BASE + '/api/chat/history', { method: 'POST', body: fd });
         const data = await res.json();
 
         document.getElementById('chatLoading').style.display = 'none';
@@ -72,7 +71,6 @@ async function loadHistory() {
     }
 }
 
-// Send message
 document.getElementById('chatForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     if (sending) return;
@@ -88,7 +86,6 @@ document.getElementById('chatForm').addEventListener('submit', async (e) => {
     addMessage('user', msg);
     scrollToBottom();
 
-    // Show typing indicator
     const typingEl = showTyping();
 
     const fd = new FormData();
@@ -98,7 +95,7 @@ document.getElementById('chatForm').addEventListener('submit', async (e) => {
     fd.append('_token', CSRF);
 
     try {
-        const res = await fetch('/api/chat/send', { method: 'POST', body: fd });
+        const res = await fetch(BASE + '/api/chat/send', { method: 'POST', body: fd });
         const data = await res.json();
 
         removeTyping(typingEl);
@@ -137,7 +134,7 @@ function addMessage(role, content, audioUrl) {
     let html = '<div class="message-bubble">' + escapeHtml(content) + '</div>';
 
     if (audioUrl) {
-        html += '<audio controls class="message-audio"><source src="/' + audioUrl + '" type="audio/mpeg"></audio>';
+        html += '<audio controls class="message-audio"><source src="' + BASE + '/' + audioUrl + '" type="audio/mpeg"></audio>';
     }
 
     div.innerHTML = html;
@@ -185,7 +182,6 @@ function escapeHtml(str) {
     return div.innerHTML;
 }
 
-// Auto-resize textarea
 const textarea = document.getElementById('messageInput');
 textarea.addEventListener('input', () => autoResize(textarea));
 textarea.addEventListener('keydown', (e) => {
@@ -200,6 +196,5 @@ function autoResize(el) {
     el.style.height = Math.min(el.scrollHeight, 120) + 'px';
 }
 
-// Load on page ready
 loadHistory();
 </script>
