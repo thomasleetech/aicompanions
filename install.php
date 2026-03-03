@@ -116,7 +116,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 break;
             }
 
-            // 2. Run migrations
+            // 2. Run migrations - execute each statement individually
+            //    (many MySQL configs reject multi-statement exec())
             try {
                 $pdo = new PDO(
                     "mysql:host={$db['dbHost']};dbname={$db['dbName']};charset=utf8mb4",
@@ -126,15 +127,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 );
 
                 $schemaFile = $basePath . '/migrations/001_schema.sql';
-                if (file_exists($schemaFile)) {
-                    $sql = file_get_contents($schemaFile);
-                    $pdo->exec($sql);
-                } else {
+                if (!file_exists($schemaFile)) {
                     $error = 'Migration file not found: migrations/001_schema.sql';
                     break;
                 }
 
-                // 3. Seed data
+                $sql = file_get_contents($schemaFile);
+
+                // Split on semicolons that end a statement and run one at a time
+                $statements = preg_split('/;\s*$/m', $sql);
+                foreach ($statements as $stmt) {
+                    $stmt = trim($stmt);
+                    if ($stmt !== '') {
+                        $pdo->exec($stmt);
+                    }
+                }
+
+                // 3. Seed data - also split into individual statements
                 $seedFile = $basePath . '/migrations/002_seed.sql';
                 if (file_exists($seedFile)) {
                     $userCount = $pdo->query("SELECT COUNT(*) FROM users")->fetchColumn();
@@ -142,13 +151,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $hash = password_hash('demo123', PASSWORD_DEFAULT);
                         $seed = file_get_contents($seedFile);
                         $seed = str_replace('$2y$10$placeholder', $hash, $seed);
-                        $pdo->exec($seed);
+
+                        $seedStatements = preg_split('/;\s*$/m', $seed);
+                        foreach ($seedStatements as $stmt) {
+                            $stmt = trim($stmt);
+                            if ($stmt !== '') {
+                                $pdo->exec($stmt);
+                            }
+                        }
                     }
                 }
 
+                // Go directly to step 4 (no redirect - avoids session loss)
                 $_SESSION['install']['step'] = 4;
-                header('Location: install.php');
-                exit;
 
             } catch (PDOException $e) {
                 $error = 'Migration error: ' . $e->getMessage();
@@ -319,10 +334,10 @@ $step = $_SESSION['install']['step'] ?? 1;
                     </div>
 
                     <button type="submit" class="btn btn-primary">Save &amp; Continue</button>
-                    <form method="POST" style="display:inline">
-                        <input type="hidden" name="action" value="restart">
-                        <button type="submit" class="btn btn-ghost">Back to Start</button>
-                    </form>
+                </form>
+                <form method="POST">
+                    <input type="hidden" name="action" value="restart">
+                    <button type="submit" class="btn btn-ghost">Back to Start</button>
                 </form>
 
             <?php elseif ($step === 3): ?>
@@ -340,10 +355,17 @@ $step = $_SESSION['install']['step'] ?? 1;
 
                 <p style="font-size:13px;color:var(--text2);margin-bottom:20px">This will create 18 database tables and seed 12 demo AI companions.</p>
 
-                <form method="POST">
+                <form method="POST" id="installForm">
                     <input type="hidden" name="action" value="finish">
-                    <button type="submit" class="btn btn-primary" id="installBtn" onclick="this.textContent='Installing...';this.disabled=true;this.form.submit();">Install Now</button>
+                    <button type="submit" class="btn btn-primary" id="installBtn">Install Now</button>
                 </form>
+                <script>
+                document.getElementById('installForm').addEventListener('submit', function() {
+                    var btn = document.getElementById('installBtn');
+                    btn.textContent = 'Installing...';
+                    btn.disabled = true;
+                });
+                </script>
                 <form method="POST">
                     <input type="hidden" name="action" value="restart">
                     <button type="submit" class="btn btn-ghost">Start Over</button>
