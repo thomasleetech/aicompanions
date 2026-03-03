@@ -162,6 +162,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                 }
 
+                // 4. Run additional migrations (003+)
+                $extraMigrations = glob($basePath . '/migrations/0[0-9][3-9]_*.sql');
+                sort($extraMigrations);
+                foreach ($extraMigrations as $migFile) {
+                    $migSql = file_get_contents($migFile);
+                    $migStmts = preg_split('/;\s*$/m', $migSql);
+                    foreach ($migStmts as $stmt) {
+                        $stmt = trim($stmt);
+                        if ($stmt !== '') {
+                            try { $pdo->exec($stmt); } catch (PDOException $e) { /* ignore if already exists */ }
+                        }
+                    }
+                }
+
                 // Go directly to step 4 (no redirect - avoids session loss)
                 $_SESSION['install']['step'] = 4;
 

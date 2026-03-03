@@ -66,6 +66,21 @@ try {
             Database::pdo()->exec($seed);
         }
     }
+    // Run additional migrations (003+) - safe to re-run (CREATE IF NOT EXISTS)
+    $extraMigrations = glob(BASE_PATH . '/migrations/0[0-9][3-9]_*.sql');
+    if ($extraMigrations) {
+        sort($extraMigrations);
+        foreach ($extraMigrations as $migFile) {
+            $migSql = file_get_contents($migFile);
+            $migStmts = preg_split('/;\s*$/m', $migSql);
+            foreach ($migStmts as $stmt) {
+                $stmt = trim($stmt);
+                if ($stmt !== '') {
+                    try { Database::pdo()->exec($stmt); } catch (Exception $e2) { /* ignore */ }
+                }
+            }
+        }
+    }
 } catch (Exception $e) {
     if (Env::get('APP_DEBUG') === 'true') {
         error_log("Migration: " . $e->getMessage());

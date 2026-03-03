@@ -36,9 +36,20 @@ class ChatController
 
         if (!$gig) { View::redirect('/app'); return; }
 
+        // Get user's upgrades for this companion
+        $upgrades = self::getUserUpgrades(Auth::id(), $gigId);
+
+        // Get user-companion relationship settings
+        $companionSettings = Database::fetch(
+            "SELECT * FROM user_companions WHERE user_id = ? AND gig_id = ?",
+            [Auth::id(), $gigId]
+        );
+
         View::render('chat/room', [
-            'gig'  => $gig,
-            'user' => Auth::user(),
+            'gig'       => $gig,
+            'user'      => Auth::user(),
+            'upgrades'  => $upgrades,
+            'settings'  => $companionSettings,
         ]);
     }
 
@@ -55,13 +66,13 @@ class ChatController
             return;
         }
 
-        $gig = Database::fetch("SELECT * FROM gigs WHERE id = ?", [$gigId]);
+        $gig = Database::fetch("SELECT g.*, u.display_name FROM gigs g JOIN users u ON g.user_id = u.id WHERE g.id = ?", [$gigId]);
         if (!$gig) {
             View::json(['success' => false, 'message' => 'Companion not found']);
             return;
         }
 
-        // Check access
+        // Check access (time purchase, subscription, or free demo)
         $access = self::checkAccess(Auth::id(), $gigId);
         if (!$access['allowed']) {
             View::json(['success' => false, 'message' => $access['message'], 'requires_purchase' => true]);
@@ -78,42 +89,46 @@ class ChatController
             $convId = Database::insert('conversations', [
                 'user_id' => Auth::id(),
                 'gig_id'  => $gigId,
-                'title'   => 'Chat with ' . $gig['title'],
+                'title'   => 'Chat with ' . ($gig['display_name'] ?? $gig['title']),
             ]);
         } else {
             $convId = $conv['id'];
         }
 
         // Save user message
-        Database::insert('chat_messages', [
+        $userMsgId = Database::insert('chat_messages', [
             'conversation_id' => $convId,
             'role'            => 'user',
             'content'         => $message,
         ]);
 
-        // Get chat history
+        // Get chat history (last 20 messages for context)
         $history = Database::fetchAll(
-            "SELECT role, content FROM chat_messages WHERE conversation_id = ? ORDER BY created_at ASC",
+            "SELECT role, content FROM chat_messages WHERE conversation_id = ? ORDER BY created_at DESC LIMIT 20",
             [$convId]
         );
+        $history = array_reverse($history);
 
-        // Get memories
+        // Get memories for this user+companion pair
         $memories = Database::fetchAll(
-            "SELECT memory_key, memory_value, memory_type FROM user_memories WHERE user_id = ? AND gig_id = ? ORDER BY confidence DESC LIMIT 20",
+            "SELECT memory_key, memory_value, memory_type FROM user_memories WHERE user_id = ? AND gig_id = ? ORDER BY last_referenced DESC, confidence DESC LIMIT 20",
             [Auth::id(), $gigId]
         );
 
-        // Get user facts
+        // Get user profile facts
         $userProfile = Database::fetch("SELECT personal_facts, interests, occupation, location FROM users WHERE id = ?", [Auth::id()]);
         $userFacts = array_filter([
             $userProfile['personal_facts'] ?? '',
             $userProfile['interests'] ? 'Interests: ' . $userProfile['interests'] : '',
             $userProfile['occupation'] ? 'Works as: ' . $userProfile['occupation'] : '',
+            $userProfile['location'] ? 'Lives in: ' . $userProfile['location'] : '',
         ]);
 
-        // Call AI
-        $persona = $gig['ai_persona'] ?: "You are {$gig['title']}. Be warm, friendly, and conversational.";
-        $aiResult = AIService::chat($persona, $history, $memories, $userFacts);
+        // Get user's upgrades for this companion
+        $upgrades = self::getUserUpgrades(Auth::id(), $gigId);
+
+        // Call AI with full context
+        $aiResult = AIService::chat($gig, $history, $memories, $userFacts, $upgrades, Auth::id());
 
         if (isset($aiResult['error'])) {
             View::json(['success' => false, 'message' => 'AI service error: ' . $aiResult['error']]);
@@ -122,41 +137,49 @@ class ChatController
 
         $aiContent = $aiResult['content'];
 
+        // Generate voice if requested
+        $audioUrl = null;
+        if ($wantVoice) {
+            $audioUrl = AIService::generateVoice($aiContent, $gig['ai_voice_id'] ?: '', $gig);
+        }
+
         // Save AI response
         Database::insert('chat_messages', [
             'conversation_id' => $convId,
             'role'            => 'assistant',
             'content'         => $aiContent,
             'tokens_used'     => ($aiResult['tokens_in'] ?? 0) + ($aiResult['tokens_out'] ?? 0),
+            'audio_url'       => $audioUrl,
         ]);
 
         // Update conversation timestamp
         Database::update('conversations', ['last_message_at' => date('Y-m-d H:i:s')], 'id = ?', [$convId]);
 
-        // Extract and save memories (async-like, non-blocking)
+        // Extract and save memories (non-blocking)
         self::saveMemories(Auth::id(), $gigId, $message, $aiContent);
 
+        // Track session activity
+        AIService::updateSessionActivity(Auth::id(), $gigId);
+
         // Deduct time if applicable
+        $timeRemaining = $access['time_remaining'];
         if ($access['time_purchase_id']) {
             Database::query(
-                "UPDATE time_purchases SET minutes_remaining = GREATEST(0, minutes_remaining - 1) WHERE id = ?",
+                "UPDATE time_purchases SET minutes_remaining = GREATEST(0, minutes_remaining - 1), status = CASE WHEN minutes_remaining <= 1 THEN 'exhausted' ELSE status END WHERE id = ?",
                 [$access['time_purchase_id']]
             );
+            $timeRemaining = max(0, $timeRemaining - 1);
         }
 
-        // Voice generation
-        $audioUrl = null;
-        if ($wantVoice) {
-            $voiceId = $gig['ai_voice_id'] ?: 'alloy';
-            $audioUrl = AIService::generateVoice($aiContent, $voiceId);
-        }
+        // Update affection level (slight boost per interaction)
+        self::updateAffection(Auth::id(), $gigId);
 
         View::json([
-            'success'        => true,
-            'response'       => $aiContent,
-            'audio_url'      => $audioUrl,
-            'time_remaining'  => $access['time_remaining'],
-            'is_demo'        => $access['is_demo'],
+            'success'         => true,
+            'response'        => $aiContent,
+            'audio_url'       => $audioUrl,
+            'time_remaining'  => $timeRemaining,
+            'is_demo'         => $access['is_demo'],
         ]);
     }
 
@@ -176,7 +199,7 @@ class ChatController
         }
 
         $messages = Database::fetchAll(
-            "SELECT role, content, audio_url, created_at FROM chat_messages WHERE conversation_id = ? ORDER BY created_at ASC",
+            "SELECT role, content, audio_url, created_at FROM chat_messages WHERE conversation_id = ? ORDER BY created_at ASC LIMIT 100",
             [$conv['id']]
         );
 
@@ -200,6 +223,8 @@ class ChatController
         View::json(['success' => true, 'conversations' => $conversations]);
     }
 
+    // ========== ACCESS CHECK ==========
+
     private static function checkAccess(int $userId, int $gigId): array
     {
         // Check time purchase
@@ -209,7 +234,7 @@ class ChatController
         );
 
         if ($time) {
-            return ['allowed' => true, 'time_remaining' => $time['minutes_remaining'], 'time_purchase_id' => $time['id'], 'is_demo' => false];
+            return ['allowed' => true, 'time_remaining' => $time['minutes_remaining'], 'time_purchase_id' => $time['id'], 'is_demo' => false, 'message' => ''];
         }
 
         // Check subscription
@@ -219,7 +244,7 @@ class ChatController
         );
 
         if ($sub) {
-            return ['allowed' => true, 'time_remaining' => -1, 'time_purchase_id' => null, 'is_demo' => false];
+            return ['allowed' => true, 'time_remaining' => -1, 'time_purchase_id' => null, 'is_demo' => false, 'message' => ''];
         }
 
         // Free demo (3 messages)
@@ -232,8 +257,25 @@ class ChatController
             return ['allowed' => true, 'time_remaining' => 0, 'time_purchase_id' => null, 'is_demo' => true, 'message' => ''];
         }
 
-        return ['allowed' => false, 'time_remaining' => 0, 'time_purchase_id' => null, 'is_demo' => false, 'message' => 'Free messages used. Purchase time to continue.'];
+        return ['allowed' => false, 'time_remaining' => 0, 'time_purchase_id' => null, 'is_demo' => false, 'message' => 'Free messages used. Purchase time to continue chatting.'];
     }
+
+    // ========== UPGRADES ==========
+
+    private static function getUserUpgrades(int $userId, int $gigId): array
+    {
+        try {
+            $rows = Database::fetchAll(
+                "SELECT upgrade_type FROM companion_upgrades WHERE user_id = ? AND gig_id = ? AND status = 'active'",
+                [$userId, $gigId]
+            );
+            return array_column($rows, 'upgrade_type');
+        } catch (Exception $e) {
+            return [];
+        }
+    }
+
+    // ========== MEMORY MANAGEMENT ==========
 
     private static function saveMemories(int $userId, int $gigId, string $userMsg, string $aiMsg): void
     {
@@ -242,10 +284,44 @@ class ChatController
             foreach ($memories as $m) {
                 if (empty($m['key']) || empty($m['value'])) continue;
                 Database::query(
-                    "INSERT INTO user_memories (user_id, gig_id, memory_type, memory_key, memory_value) VALUES (?, ?, ?, ?, ?)
-                     ON DUPLICATE KEY UPDATE memory_value = VALUES(memory_value), last_referenced = NOW()",
+                    "INSERT INTO user_memories (user_id, gig_id, memory_type, memory_key, memory_value, confidence)
+                     VALUES (?, ?, ?, ?, ?, 0.85)
+                     ON DUPLICATE KEY UPDATE
+                        memory_value = VALUES(memory_value),
+                        confidence = LEAST(confidence + 0.05, 1.0),
+                        last_referenced = NOW()",
                     [$userId, $gigId, $m['type'] ?? 'fact', $m['key'], $m['value']]
                 );
+            }
+        } catch (Exception $e) {
+            // Non-critical
+        }
+    }
+
+    // ========== AFFECTION TRACKING ==========
+
+    private static function updateAffection(int $userId, int $gigId): void
+    {
+        try {
+            $exists = Database::fetch(
+                "SELECT id, affection_level FROM user_companions WHERE user_id = ? AND gig_id = ?",
+                [$userId, $gigId]
+            );
+
+            if ($exists) {
+                // Small affection boost per interaction, cap at 100
+                $newLevel = min(100, $exists['affection_level'] + 1);
+                Database::query(
+                    "UPDATE user_companions SET affection_level = ?, last_interaction = NOW() WHERE id = ?",
+                    [$newLevel, $exists['id']]
+                );
+            } else {
+                Database::insert('user_companions', [
+                    'user_id'          => $userId,
+                    'gig_id'           => $gigId,
+                    'affection_level'  => 51,
+                    'last_interaction' => date('Y-m-d H:i:s'),
+                ]);
             }
         } catch (Exception $e) {
             // Non-critical
