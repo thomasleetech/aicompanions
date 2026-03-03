@@ -45,6 +45,10 @@ class View
 
     public static function redirect(string $url): void
     {
+        // Prepend BASE_URL for relative paths (starting with /)
+        if (defined('BASE_URL') && str_starts_with($url, '/')) {
+            $url = BASE_URL . $url;
+        }
         header('Location: ' . $url);
         exit;
     }

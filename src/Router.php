@@ -22,10 +22,10 @@ class Router
         $uri = parse_url($uri, PHP_URL_PATH);
         $uri = rtrim($uri, '/') ?: '/';
 
-        // Remove base path (e.g., /public)
-        $scriptDir = dirname($_SERVER['SCRIPT_NAME']);
-        if ($scriptDir !== '/' && strpos($uri, $scriptDir) === 0) {
-            $uri = substr($uri, strlen($scriptDir));
+        // Remove subdirectory prefix (e.g., /aicompanions)
+        $base = defined('BASE_URL') ? BASE_URL : '';
+        if ($base !== '' && strpos($uri, $base) === 0) {
+            $uri = substr($uri, strlen($base));
             $uri = '/' . ltrim($uri, '/');
         }
 
