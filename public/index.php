@@ -6,25 +6,36 @@
 
 session_start();
 
-// Base paths
-define('BASE_PATH', dirname(__DIR__));
-define('PUBLIC_PATH', __DIR__);
+// Base paths - resolve symlinks to get the real filesystem path
+define('PUBLIC_PATH', realpath(__DIR__) ?: __DIR__);
+define('BASE_PATH', realpath(dirname(__DIR__)) ?: dirname(__DIR__));
 
-// Autoloader
+// Load core classes explicitly (avoids autoloader path issues on shared hosts)
+require_once BASE_PATH . '/src/Env.php';
+require_once BASE_PATH . '/src/Database.php';
+require_once BASE_PATH . '/src/Router.php';
+require_once BASE_PATH . '/src/View.php';
+require_once BASE_PATH . '/src/Auth.php';
+require_once BASE_PATH . '/src/CSRF.php';
+
+// Autoloader for controllers, services, models
 spl_autoload_register(function (string $class) {
-    $paths = [
-        BASE_PATH . '/src/' . $class . '.php',
-        BASE_PATH . '/src/Controllers/' . $class . '.php',
-        BASE_PATH . '/src/Services/' . $class . '.php',
-        BASE_PATH . '/src/Models/' . $class . '.php',
-    ];
-    foreach ($paths as $path) {
+    $dirs = ['Controllers', 'Services', 'Models'];
+    foreach ($dirs as $dir) {
+        $path = BASE_PATH . '/src/' . $dir . '/' . $class . '.php';
         if (file_exists($path)) { require_once $path; return; }
     }
 });
 
 // Boot
 Env::load(BASE_PATH);
+
+// Only connect to DB if .env exists (otherwise installer hasn't run yet)
+if (!file_exists(BASE_PATH . '/.env') || !Env::get('DB_NAME')) {
+    header('Location: ' . dirname($_SERVER['SCRIPT_NAME']) . '/../install.php');
+    exit;
+}
+
 Database::connect();
 View::init(BASE_PATH . '/views');
 
