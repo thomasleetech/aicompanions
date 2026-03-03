@@ -33,45 +33,127 @@ $hasVoice = in_array('voice', $upgrades ?? []) || in_array('premium', $upgrades 
                 <button class="btn btn-sm btn-ghost" onclick="toggleGiftShop()">&times;</button>
             </div>
             <div class="gift-shop-items">
-                <div class="gift-item <?= in_array('voice', $upgrades ?? []) ? 'owned' : '' ?>">
+                <div class="gift-category">Communication</div>
+                <div class="gift-item <?= in_array('voice', $upgrades ?? []) ? 'owned' : '' ?>" data-upgrade="voice" data-price="4.99">
                     <span class="gift-icon">🎤</span>
                     <div class="gift-info">
-                        <strong>Voice Messages</strong>
+                        <strong>Voice Pack</strong>
                         <small>Hear <?= $companionName ?>'s voice</small>
                     </div>
                     <span class="gift-price"><?= in_array('voice', $upgrades ?? []) ? 'Owned' : '$4.99' ?></span>
                 </div>
-                <div class="gift-item <?= in_array('photos', $upgrades ?? []) ? 'owned' : '' ?>">
+                <div class="gift-item <?= in_array('voice_input', $upgrades ?? []) ? 'owned' : '' ?>" data-upgrade="voice_input" data-price="5.99">
+                    <span class="gift-icon">🎙️</span>
+                    <div class="gift-info">
+                        <strong>Voice Input</strong>
+                        <small>Send voice messages to <?= $companionName ?></small>
+                    </div>
+                    <span class="gift-price"><?= in_array('voice_input', $upgrades ?? []) ? 'Owned' : '$5.99' ?></span>
+                </div>
+                <div class="gift-item <?= in_array('email', $upgrades ?? []) ? 'owned' : '' ?>" data-upgrade="email" data-price="7.99">
+                    <span class="gift-icon">💌</span>
+                    <div class="gift-info">
+                        <strong>Email Access</strong>
+                        <small>Get emails &amp; love letters</small>
+                    </div>
+                    <span class="gift-price"><?= in_array('email', $upgrades ?? []) ? 'Owned' : '$7.99' ?></span>
+                </div>
+
+                <div class="gift-category">Media</div>
+                <div class="gift-item <?= in_array('photos', $upgrades ?? []) ? 'owned' : '' ?>" data-upgrade="photos" data-price="9.99">
                     <span class="gift-icon">📸</span>
                     <div class="gift-info">
                         <strong>Photo Pack</strong>
                         <small>Get selfies from <?= $companionName ?></small>
                     </div>
-                    <span class="gift-price"><?= in_array('photos', $upgrades ?? []) ? 'Owned' : '$7.99' ?></span>
+                    <span class="gift-badge">Most Popular</span>
+                    <span class="gift-price"><?= in_array('photos', $upgrades ?? []) ? 'Owned' : '$9.99' ?></span>
                 </div>
-                <div class="gift-item <?= in_array('spicy', $upgrades ?? []) ? 'owned' : '' ?>">
+                <div class="gift-item <?= in_array('videos', $upgrades ?? []) ? 'owned' : '' ?>" data-upgrade="videos" data-price="14.99">
+                    <span class="gift-icon">🎬</span>
+                    <div class="gift-info">
+                        <strong>Video Pack</strong>
+                        <small>Short video clips &amp; messages</small>
+                    </div>
+                    <span class="gift-badge new">NEW</span>
+                    <span class="gift-price"><?= in_array('videos', $upgrades ?? []) ? 'Owned' : '$14.99' ?></span>
+                </div>
+
+                <div class="gift-category">Intelligence</div>
+                <div class="gift-item <?= in_array('web_search', $upgrades ?? []) ? 'owned' : '' ?>" data-upgrade="web_search" data-price="9.99">
+                    <span class="gift-icon">🌐</span>
+                    <div class="gift-info">
+                        <strong>Internet Access</strong>
+                        <small>Real-time web search &amp; current events</small>
+                    </div>
+                    <span class="gift-badge new">NEW</span>
+                    <span class="gift-price"><?= in_array('web_search', $upgrades ?? []) ? 'Owned' : '$9.99' ?></span>
+                </div>
+                <div class="gift-item <?= in_array('creative', $upgrades ?? []) ? 'owned' : '' ?>" data-upgrade="creative" data-price="12.99">
+                    <span class="gift-icon">🎨</span>
+                    <div class="gift-info">
+                        <strong>Creative Mode</strong>
+                        <small>Art, poetry, stories &amp; love letters</small>
+                    </div>
+                    <span class="gift-badge new">NEW</span>
+                    <span class="gift-price"><?= in_array('creative', $upgrades ?? []) ? 'Owned' : '$12.99' ?></span>
+                </div>
+                <div class="gift-item <?= in_array('realtime_vision', $upgrades ?? []) ? 'owned' : '' ?>" data-upgrade="realtime_vision" data-price="19.99">
+                    <span class="gift-icon">👁️</span>
+                    <div class="gift-info">
+                        <strong>Real-Time Vision</strong>
+                        <small>Live video — <?= $companionName ?> reacts to you</small>
+                    </div>
+                    <span class="gift-badge hot">HOT</span>
+                    <span class="gift-price"><?= in_array('realtime_vision', $upgrades ?? []) ? 'Owned' : '$19.99' ?></span>
+                </div>
+
+                <div class="gift-category">18+ Adult</div>
+                <div class="gift-item <?= in_array('spicy_personality', $upgrades ?? []) ? 'owned' : '' ?>" data-upgrade="spicy_personality" data-price="14.99">
+                    <span class="gift-icon">💋</span>
+                    <div class="gift-info">
+                        <strong>Spicy Personality</strong>
+                        <small>Unlock explicit adult conversations</small>
+                    </div>
+                    <span class="gift-badge adult">18+</span>
+                    <span class="gift-price"><?= in_array('spicy_personality', $upgrades ?? []) ? 'Owned' : '$14.99' ?></span>
+                </div>
+                <div class="gift-item <?= in_array('spicy', $upgrades ?? []) ? 'owned' : '' ?>" data-upgrade="spicy" data-price="19.99" data-requires="photos">
                     <span class="gift-icon">🔥</span>
                     <div class="gift-info">
                         <strong>Spicy Photos</strong>
-                        <small>Intimate pics from <?= $companionName ?></small>
+                        <small>Intimate &amp; explicit pics</small>
                     </div>
-                    <span class="gift-price"><?= in_array('spicy', $upgrades ?? []) ? 'Owned' : '$12.99' ?></span>
+                    <span class="gift-badge adult">18+</span>
+                    <span class="gift-price"><?= in_array('spicy', $upgrades ?? []) ? 'Owned' : '$19.99' ?></span>
                 </div>
-                <div class="gift-item <?= in_array('spicy_personality', $upgrades ?? []) ? 'owned' : '' ?>">
-                    <span class="gift-icon">💋</span>
+                <div class="gift-item <?= in_array('spicy_videos', $upgrades ?? []) ? 'owned' : '' ?>" data-upgrade="spicy_videos" data-price="24.99" data-requires="videos">
+                    <span class="gift-icon">🍑</span>
                     <div class="gift-info">
-                        <strong>Spicy Chat</strong>
-                        <small>Unlock adult conversations</small>
+                        <strong>Spicy Videos</strong>
+                        <small>Intimate &amp; explicit video clips</small>
                     </div>
-                    <span class="gift-price"><?= in_array('spicy_personality', $upgrades ?? []) ? 'Owned' : '$9.99' ?></span>
+                    <span class="gift-badge adult">18+</span>
+                    <span class="gift-price"><?= in_array('spicy_videos', $upgrades ?? []) ? 'Owned' : '$24.99' ?></span>
                 </div>
-                <div class="gift-item <?= in_array('premium_plus', $upgrades ?? []) ? 'owned' : '' ?>">
+
+                <div class="gift-category">Bundles</div>
+                <div class="gift-item bundle <?= in_array('premium', $upgrades ?? []) ? 'owned' : '' ?>" data-upgrade="premium" data-price="29.99">
+                    <span class="gift-icon">⭐</span>
+                    <div class="gift-info">
+                        <strong>Premium Bundle</strong>
+                        <small>Voice + Photos + Email + Creative</small>
+                    </div>
+                    <span class="gift-badge best">Best Value</span>
+                    <span class="gift-price"><?= in_array('premium', $upgrades ?? []) ? 'Owned' : '<s>$47.99</s> $29.99' ?></span>
+                </div>
+                <div class="gift-item bundle vip <?= in_array('premium_plus', $upgrades ?? []) ? 'owned' : '' ?>" data-upgrade="premium_plus" data-price="99.99">
                     <span class="gift-icon">👑</span>
                     <div class="gift-info">
-                        <strong>Premium+</strong>
-                        <small>Everything unlocked</small>
+                        <strong>VIP Bundle</strong>
+                        <small>EVERYTHING unlocked — lifetime access</small>
                     </div>
-                    <span class="gift-price"><?= in_array('premium_plus', $upgrades ?? []) ? 'Owned' : '$24.99' ?></span>
+                    <span class="gift-price"><?= in_array('premium_plus', $upgrades ?? []) ? 'Owned' : '<s>$149.99</s> $99.99' ?></span>
                 </div>
             </div>
         </div>
@@ -136,6 +218,16 @@ $hasVoice = in_array('voice', $upgrades ?? []) || in_array('premium', $upgrades 
 .gift-info small { color: var(--text-muted, #888); font-size: 11px; }
 .gift-price { font-size: 13px; font-weight: 600; color: var(--accent, #e040fb); }
 .gift-item.owned .gift-price { color: var(--text-muted, #888); }
+.gift-category { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted, #888); margin-top: 10px; margin-bottom: 2px; padding-left: 4px; }
+.gift-category:first-child { margin-top: 0; }
+.gift-badge { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px; background: var(--accent, #e040fb); color: #fff; text-transform: uppercase; white-space: nowrap; }
+.gift-badge.new { background: #00c853; }
+.gift-badge.hot { background: #ff5722; }
+.gift-badge.adult { background: #e91e63; }
+.gift-badge.best { background: linear-gradient(135deg, #ff9800, #f44336); }
+.gift-item.bundle { border: 1px solid var(--accent, #e040fb); }
+.gift-item.vip { border-color: gold; background: linear-gradient(135deg, rgba(255,215,0,0.05), rgba(255,215,0,0.02)); }
+.gift-price s { color: var(--text-muted, #666); font-size: 11px; margin-right: 2px; }
 
 /* Chat images */
 .message-bubble img {
@@ -358,6 +450,57 @@ function autoResize(el) {
     el.style.height = 'auto';
     el.style.height = Math.min(el.scrollHeight, 120) + 'px';
 }
+
+// Gift shop purchase handler
+document.querySelectorAll('.gift-item:not(.owned)').forEach(el => {
+    el.addEventListener('click', async () => {
+        const upgrade = el.dataset.upgrade;
+        const price = el.dataset.price;
+        const requires = el.dataset.requires;
+
+        // Check prerequisites
+        if (requires) {
+            const owned = <?= json_encode($upgrades ?? []) ?>;
+            if (!owned.includes(requires) && !owned.includes('premium') && !owned.includes('premium_plus')) {
+                addSystemMessage('You need the ' + requires.replace('_', ' ') + ' pack first before unlocking this.');
+                return;
+            }
+        }
+
+        if (!confirm('Purchase ' + el.querySelector('strong').textContent + ' for $' + price + '?')) return;
+
+        // Try Stripe first, then PayPal, then direct (free/dev mode)
+        const fd = new FormData();
+        fd.append('gig_id', GIG_ID);
+        fd.append('upgrade_type', upgrade);
+        fd.append('purchase_type', 'upgrade');
+        fd.append('_token', CSRF);
+
+        try {
+            // Attempt Stripe checkout
+            let res = await fetch(BASE + '/api/payment/stripe-checkout', { method: 'POST', body: fd });
+            let data = await res.json();
+            if (data.success && data.url) {
+                window.location.href = data.url;
+                return;
+            }
+
+            // Fallback: direct purchase (dev mode / no payment provider)
+            fd.delete('purchase_type');
+            res = await fetch(BASE + '/api/upgrade/purchase', { method: 'POST', body: fd });
+            data = await res.json();
+            if (data.success) {
+                el.classList.add('owned');
+                el.querySelector('.gift-price').textContent = 'Owned';
+                addSystemMessage(data.message || 'Upgrade unlocked!');
+            } else {
+                addSystemMessage(data.message || 'Purchase failed');
+            }
+        } catch (e) {
+            addSystemMessage('Connection error');
+        }
+    });
+});
 
 loadHistory();
 </script>

@@ -115,6 +115,11 @@ $router->post('/api/profile/update', [ProfileController::class, 'update']);
 $router->post('/api/profile/avatar', [ProfileController::class, 'uploadAvatar']);
 $router->post('/api/profile/memories', [ProfileController::class, 'memories']);
 $router->post('/api/profile/memories/delete', [ProfileController::class, 'deleteMemory']);
+$router->post('/api/upgrade/purchase', [UpgradeController::class, 'purchase']);
+$router->post('/api/payment/stripe-checkout', [PaymentController::class, 'stripeCheckout']);
+$router->post('/api/payment/stripe-webhook', [PaymentController::class, 'stripeWebhook']);
+$router->post('/api/payment/paypal-create', [PaymentController::class, 'paypalCreate']);
+$router->post('/api/payment/paypal-capture', [PaymentController::class, 'paypalCapture']);
 $router->post('/api/admin/login', [AdminController::class, 'login']);
 $router->post('/api/admin/stats', [AdminController::class, 'stats']);
 $router->post('/api/admin/users', [AdminController::class, 'users']);
@@ -122,6 +127,11 @@ $router->post('/api/admin/companions', [AdminController::class, 'companions']);
 $router->post('/api/admin/companion/toggle', [AdminController::class, 'toggleCompanion']);
 $router->post('/api/admin/companion/featured', [AdminController::class, 'toggleFeatured']);
 $router->post('/api/admin/api-usage', [AdminController::class, 'apiUsage']);
+$router->post('/api/admin/companion/get', [AdminController::class, 'getCompanion']);
+$router->post('/api/admin/companion/save', [AdminController::class, 'saveCompanion']);
+$router->post('/api/admin/companion/create', [AdminController::class, 'createCompanion']);
+$router->post('/api/admin/companion/delete', [AdminController::class, 'deleteCompanion']);
+$router->post('/api/admin/companion/preview-prompt', [AdminController::class, 'previewPrompt']);
 
 // Dispatch
 $router->dispatch($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI']);
