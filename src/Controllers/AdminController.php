@@ -247,4 +247,72 @@ class AdminController
 
         View::json(['success' => true, 'by_type' => $byType, 'total_cost' => (float) $totalCost]);
     }
+
+    // ========== SETTINGS ==========
+
+    public static function saveSettings(): void
+    {
+        if (!Auth::requireAdmin()) return;
+
+        $envPath = BASE_PATH . '/.env';
+        if (!file_exists($envPath)) {
+            View::json(['success' => false, 'message' => '.env file not found']);
+            return;
+        }
+
+        $envContent = file_get_contents($envPath);
+        $validKeys = [
+            'STRIPE_PUBLISHABLE_KEY', 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET',
+            'PAYPAL_CLIENT_ID', 'PAYPAL_SECRET', 'PAYPAL_MODE',
+            'OPENAI_API_KEY', 'OPENROUTER_API_KEY', 'OPENROUTER_MODEL',
+            'ELEVENLABS_API_KEY', 'GROK_API_KEY', 'REPLICATE_API_KEY', 'REPLICATE_MODEL_VERSION',
+        ];
+
+        foreach ($validKeys as $key) {
+            if (!isset($_POST[$key])) continue;
+            $value = trim($_POST[$key]);
+
+            if (preg_match('/^' . preg_quote($key, '/') . '=(.*)$/m', $envContent)) {
+                $envContent = preg_replace(
+                    '/^' . preg_quote($key, '/') . '=(.*)$/m',
+                    $key . '=' . $value,
+                    $envContent
+                );
+            } else {
+                $envContent .= "\n" . $key . '=' . $value;
+            }
+        }
+
+        file_put_contents($envPath, $envContent);
+        View::json(['success' => true]);
+    }
+
+    public static function generateImage(): void
+    {
+        if (!Auth::requireAdmin()) return;
+
+        $id = (int) ($_POST['id'] ?? 0);
+        $gig = Database::fetch("SELECT * FROM gigs WHERE id = ?", [$id]);
+        if (!$gig) { View::json(['success' => false, 'message' => 'Companion not found']); return; }
+
+        $appearance = $gig['base_appearance'] ?? '';
+        if (empty($appearance)) {
+            $defaults = [
+                'girlfriend' => 'young woman, early 20s, naturally attractive, warm friendly face',
+                'boyfriend' => 'young man, early 20s, handsome, friendly approachable look',
+                'non-binary' => 'young androgynous person, early 20s, attractive, warm expression',
+            ];
+            $appearance = $defaults[$gig['companion_type'] ?? 'non-binary'] ?? $defaults['non-binary'];
+        }
+
+        $description = "Professional headshot portrait, warm smile, natural lighting, high quality, studio background";
+        $imageUrl = AIService::generateCompanionImage($gig, $description, false, null);
+
+        if ($imageUrl) {
+            Database::query("UPDATE gigs SET image_url = ? WHERE id = ?", [url($imageUrl), $id]);
+            View::json(['success' => true, 'image_url' => url($imageUrl)]);
+        } else {
+            View::json(['success' => false, 'message' => 'Image generation failed. Check your API keys.']);
+        }
+    }
 }

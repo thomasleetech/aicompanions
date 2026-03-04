@@ -96,4 +96,89 @@ class Auth
         http_response_code(403);
         return false;
     }
+
+    // ========== PASSWORD RESET ==========
+
+    public static function requestPasswordReset(string $email): array
+    {
+        $user = Database::fetch("SELECT id, email FROM users WHERE email = ?", [$email]);
+        if (!$user) return ['success' => true]; // Prevent email enumeration
+
+        $token = bin2hex(random_bytes(32));
+        $expires = date('Y-m-d H:i:s', strtotime('+1 hour'));
+
+        try {
+            Database::query(
+                "UPDATE users SET password_reset_token = ?, password_reset_expires = ? WHERE id = ?",
+                [$token, $expires, $user['id']]
+            );
+
+            $resetUrl = (Env::get('APP_URL') ?: '') . url('reset-password') . '?token=' . $token;
+            $subject = "Lush - Reset Your Password";
+            $body = "Hi,\n\nYou requested a password reset. Click the link below:\n\n{$resetUrl}\n\nThis link expires in 1 hour.\n\nIf you didn't request this, ignore this email.\n\n- Lush";
+            @mail($user['email'], $subject, $body, "From: noreply@" . ($_SERVER['HTTP_HOST'] ?? 'lush.app') . "\r\nContent-Type: text/plain; charset=UTF-8");
+        } catch (Exception $e) {
+            // Column might not exist yet
+        }
+
+        return ['success' => true];
+    }
+
+    public static function resetPassword(string $token, string $password): array
+    {
+        if (strlen($password) < 6) return ['success' => false, 'message' => 'Password must be at least 6 characters'];
+
+        try {
+            $user = Database::fetch(
+                "SELECT id FROM users WHERE password_reset_token = ? AND password_reset_expires > NOW()",
+                [$token]
+            );
+        } catch (Exception $e) {
+            return ['success' => false, 'message' => 'Password reset not available yet. Run the database migration.'];
+        }
+
+        if (!$user) return ['success' => false, 'message' => 'Invalid or expired reset link'];
+
+        Database::query(
+            "UPDATE users SET password_hash = ?, password_reset_token = NULL, password_reset_expires = NULL WHERE id = ?",
+            [password_hash($password, PASSWORD_DEFAULT), $user['id']]
+        );
+
+        return ['success' => true, 'message' => 'Password has been reset. You can now log in.'];
+    }
+
+    // ========== EMAIL VERIFICATION ==========
+
+    public static function sendVerificationEmail(int $userId): void
+    {
+        $user = Database::fetch("SELECT email FROM users WHERE id = ?", [$userId]);
+        if (!$user) return;
+
+        $token = bin2hex(random_bytes(32));
+
+        try {
+            Database::query("UPDATE users SET email_verify_token = ? WHERE id = ?", [$token, $userId]);
+        } catch (Exception $e) {
+            return;
+        }
+
+        $verifyUrl = (Env::get('APP_URL') ?: '') . url('verify-email') . '?token=' . $token;
+        $subject = "Lush - Verify Your Email";
+        $body = "Welcome to Lush!\n\nClick the link below to verify your email:\n\n{$verifyUrl}\n\n- Lush";
+        @mail($user['email'], $subject, $body, "From: noreply@" . ($_SERVER['HTTP_HOST'] ?? 'lush.app') . "\r\nContent-Type: text/plain; charset=UTF-8");
+    }
+
+    public static function verifyEmail(string $token): array
+    {
+        try {
+            $user = Database::fetch("SELECT id FROM users WHERE email_verify_token = ?", [$token]);
+        } catch (Exception $e) {
+            return ['success' => false, 'message' => 'Email verification not available yet.'];
+        }
+
+        if (!$user) return ['success' => false, 'message' => 'Invalid verification link'];
+
+        Database::query("UPDATE users SET email_verified = 1, email_verify_token = NULL WHERE id = ?", [$user['id']]);
+        return ['success' => true, 'message' => 'Email verified successfully!'];
+    }
 }

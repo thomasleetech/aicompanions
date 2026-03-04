@@ -1,4 +1,4 @@
-<?php $pageTitle = 'Admin Dashboard'; ?>
+<?php $pageTitle = 'Admin Dashboard - Lush'; ?>
 
 <section class="admin-section">
     <div class="admin-header">
@@ -22,6 +22,7 @@
         <button class="tab active" onclick="showTab('users')">Users</button>
         <button class="tab" onclick="showTab('companions')">Companions</button>
         <button class="tab" onclick="showTab('api')">API Usage</button>
+        <button class="tab" onclick="showTab('settings')">Settings</button>
     </div>
 
     <!-- Users -->
@@ -68,6 +69,45 @@
             <div class="api-total">Total Cost: <strong id="apiTotalCost">$0.00</strong></div>
         </div>
     </div>
+
+    <!-- Settings -->
+    <div class="admin-panel" id="panel-settings" style="display:none">
+        <div class="panel-header">Platform Settings</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;padding:16px 0">
+            <div class="settings-card">
+                <h4>Stripe</h4>
+                <div class="form-group"><label>Publishable Key</label><input type="text" id="setStripeKey" placeholder="pk_test_..." value="<?= View::e(Env::get('STRIPE_PUBLISHABLE_KEY') ?: '') ?>"></div>
+                <div class="form-group"><label>Secret Key</label><input type="password" id="setStripeSecret" placeholder="sk_test_..." value="<?= View::e(Env::get('STRIPE_SECRET_KEY') ? '••••••••' : '') ?>"></div>
+                <div class="form-group"><label>Webhook Secret</label><input type="password" id="setStripeWebhook" placeholder="whsec_..." value="<?= View::e(Env::get('STRIPE_WEBHOOK_SECRET') ? '••••••••' : '') ?>"></div>
+                <small style="color:var(--text2,#888)">Status: <?= Env::get('STRIPE_SECRET_KEY') ? '<span style="color:#4caf50">Configured</span>' : '<span style="color:#f44336">Not configured</span>' ?></small>
+            </div>
+            <div class="settings-card">
+                <h4>PayPal</h4>
+                <div class="form-group"><label>Client ID</label><input type="text" id="setPaypalId" placeholder="Client ID..." value="<?= View::e(Env::get('PAYPAL_CLIENT_ID') ?: '') ?>"></div>
+                <div class="form-group"><label>Secret</label><input type="password" id="setPaypalSecret" placeholder="Secret..." value="<?= View::e(Env::get('PAYPAL_SECRET') ? '••••••••' : '') ?>"></div>
+                <div class="form-group"><label>Mode</label>
+                    <select id="setPaypalMode">
+                        <option value="sandbox" <?= Env::get('PAYPAL_MODE') === 'live' ? '' : 'selected' ?>>Sandbox</option>
+                        <option value="live" <?= Env::get('PAYPAL_MODE') === 'live' ? 'selected' : '' ?>>Live</option>
+                    </select>
+                </div>
+                <small style="color:var(--text2,#888)">Status: <?= Env::get('PAYPAL_CLIENT_ID') ? '<span style="color:#4caf50">Configured</span>' : '<span style="color:#f44336">Not configured</span>' ?></small>
+            </div>
+            <div class="settings-card">
+                <h4>AI Providers</h4>
+                <div class="form-group"><label>OpenAI API Key</label><input type="password" id="setOpenaiKey" value="<?= View::e(Env::get('OPENAI_API_KEY') ? '••••••••' : '') ?>" placeholder="sk-..."></div>
+                <div class="form-group"><label>OpenRouter API Key</label><input type="password" id="setOpenrouterKey" value="<?= View::e(Env::get('OPENROUTER_API_KEY') ? '••••••••' : '') ?>" placeholder="sk-or-..."></div>
+                <div class="form-group"><label>ElevenLabs API Key</label><input type="password" id="setElevenlabsKey" value="<?= View::e(Env::get('ELEVENLABS_API_KEY') ? '••••••••' : '') ?>" placeholder="..."></div>
+            </div>
+            <div class="settings-card">
+                <h4>Image Generation</h4>
+                <div class="form-group"><label>Grok API Key</label><input type="password" id="setGrokKey" value="<?= View::e(Env::get('GROK_API_KEY') ? '••••••••' : '') ?>" placeholder="xai-..."></div>
+                <div class="form-group"><label>Replicate API Key</label><input type="password" id="setReplicateKey" value="<?= View::e(Env::get('REPLICATE_API_KEY') ? '••••••••' : '') ?>" placeholder="r8_..."></div>
+                <div class="form-group"><label>Replicate Model Version</label><input type="text" id="setReplicateModel" value="<?= View::e(Env::get('REPLICATE_MODEL_VERSION') ?: '') ?>" placeholder="model version hash"></div>
+            </div>
+        </div>
+        <div style="padding:0 0 16px"><button class="btn btn-primary" onclick="saveSettings()">Save Settings</button> <small style="color:var(--text2,#888);margin-left:8px">Settings are saved to .env file</small></div>
+    </div>
 </section>
 
 <!-- ========== COMPANION EDITOR MODAL ========== -->
@@ -87,6 +127,7 @@
                 <button class="mtab" onclick="showModalTab('prompts')">Prompt Architecture</button>
                 <button class="mtab" onclick="showModalTab('pricing')">Pricing & Upsell</button>
                 <button class="mtab" onclick="showModalTab('voice')">Voice & Media</button>
+                <button class="mtab" onclick="showModalTab('tools')">Tools</button>
             </div>
 
             <!-- Identity Tab -->
@@ -122,7 +163,13 @@
                 </div>
                 <div class="form-group">
                     <label>Image URL</label>
-                    <input type="text" id="editImageUrl" placeholder="https://...">
+                    <div style="display:flex;gap:8px;align-items:start">
+                        <input type="text" id="editImageUrl" placeholder="https://..." style="flex:1">
+                        <button class="btn btn-sm btn-primary" onclick="generateImage()" id="genImageBtn" title="Generate AI profile image from appearance description">Generate</button>
+                    </div>
+                    <div id="genImagePreview" style="margin-top:8px;display:none">
+                        <img id="genImageImg" src="" alt="Generated" style="max-width:120px;border-radius:8px">
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>Base Appearance (for AI image generation — keep consistent)</label>
@@ -223,6 +270,90 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Tools Tab -->
+            <div class="modal-tab-panel" id="mtab-tools" style="display:none">
+                <p class="tab-desc">Tools are unlocked when users purchase the corresponding upgrade from the gift shop. The companion's AI automatically uses available tools in conversation.</p>
+
+                <div class="tools-grid">
+                    <div class="tool-card">
+                        <div class="tool-header">
+                            <span class="tool-icon">🌐</span>
+                            <strong>Internet Access</strong>
+                        </div>
+                        <p>Companion can search the web for current info, news, facts, weather, and more.</p>
+                        <small>Upgrade: <code>web_search</code> ($9.99)</small>
+                        <div class="tool-tag">Uses: <code>[SEARCH: query]</code> tag</div>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-header">
+                            <span class="tool-icon">🎨</span>
+                            <strong>Creative Mode</strong>
+                        </div>
+                        <p>Write poetry, stories, love letters, song lyrics, and other creative content.</p>
+                        <small>Upgrade: <code>creative</code> ($12.99) or <code>premium</code></small>
+                        <div class="tool-tag">Uses: <code>[CREATIVE: type | direction]</code> tag</div>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-header">
+                            <span class="tool-icon">💌</span>
+                            <strong>Email / Inbox</strong>
+                        </div>
+                        <p>Send longer messages, love letters, and emails to user's inbox.</p>
+                        <small>Upgrade: <code>email</code> ($7.99) or <code>premium</code></small>
+                        <div class="tool-tag">Uses: <code>[EMAIL: subject | body]</code> tag</div>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-header">
+                            <span class="tool-icon">📸</span>
+                            <strong>Photo Generation</strong>
+                        </div>
+                        <p>AI-generated selfies and photos sent naturally in conversation.</p>
+                        <small>Upgrade: <code>photos</code> ($9.99) or <code>premium</code></small>
+                        <div class="tool-tag">Uses: <code>[PHOTO: description]</code> tag</div>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-header">
+                            <span class="tool-icon">🔥</span>
+                            <strong>Spicy Photos</strong>
+                        </div>
+                        <p>Intimate and explicit AI-generated photos. Requires base photo pack.</p>
+                        <small>Upgrade: <code>spicy</code> ($19.99), requires <code>photos</code></small>
+                        <div class="tool-tag">Uses: <code>[SPICY: description]</code> tag</div>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-header">
+                            <span class="tool-icon">🎤</span>
+                            <strong>Voice Messages</strong>
+                        </div>
+                        <p>Text-to-speech voice replies using OpenAI TTS or ElevenLabs.</p>
+                        <small>Upgrade: <code>voice</code> ($4.99) or <code>premium</code></small>
+                        <div class="tool-tag">Activated via voice toggle in chat</div>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-header">
+                            <span class="tool-icon">👁️</span>
+                            <strong>Real-Time Vision</strong>
+                        </div>
+                        <p>Companion reacts to user's camera feed. Requires WebRTC integration.</p>
+                        <small>Upgrade: <code>realtime_vision</code> ($19.99)</small>
+                        <div class="tool-tag">Uses: <code>[VISION: description]</code> tag</div>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-header">
+                            <span class="tool-icon">💋</span>
+                            <strong>Spicy Personality</strong>
+                        </div>
+                        <p>Unlocks explicit adult conversation mode. Routes to OpenRouter for uncensored responses.</p>
+                        <small>Upgrade: <code>spicy_personality</code> ($14.99)</small>
+                        <div class="tool-tag">Modifies: system prompt + AI provider</div>
+                    </div>
+                </div>
+
+                <div style="margin-top:16px;padding:12px;background:var(--bg1,#0f0f23);border-radius:8px;font-size:12px;color:var(--text2,#888)">
+                    <strong>How tools work:</strong> When a user purchases an upgrade, the companion's system prompt is automatically updated with tool instructions. The AI naturally uses tags like <code>[SEARCH: query]</code> in its responses, which are intercepted and processed by the ToolService before being sent to the user.
+                </div>
+            </div>
         </div>
 
         <div class="modal-footer">
@@ -292,6 +423,21 @@
 .slider-val { min-width:28px;text-align:center;font-size:12px;font-weight:700;color:var(--accent,#e040fb) }
 .slider-labels { display:flex;justify-content:space-between;font-size:9px;color:var(--text2,#666);margin-top:2px }
 .slider-desc { color:var(--text2,#666);font-size:10px;display:block;margin-top:2px }
+
+/* Settings Cards */
+.settings-card { background:var(--bg1,#0f0f23);border:1px solid var(--border,#333);border-radius:10px;padding:16px }
+.settings-card h4 { margin:0 0 12px;font-size:14px;color:var(--text,#e0e0e0) }
+
+/* Tools Grid */
+.tools-grid { display:grid;grid-template-columns:1fr 1fr;gap:12px }
+.tool-card { background:var(--bg1,#0f0f23);border:1px solid var(--border,#333);border-radius:10px;padding:14px }
+.tool-header { display:flex;align-items:center;gap:8px;margin-bottom:6px }
+.tool-header .tool-icon { font-size:18px }
+.tool-header strong { font-size:13px }
+.tool-card p { font-size:12px;color:var(--text2,#aaa);margin:0 0 6px;line-height:1.4 }
+.tool-card small { font-size:10px;color:var(--text2,#666) }
+.tool-card code { background:var(--bg2,#1a1a2e);padding:1px 4px;border-radius:3px;font-size:10px;color:var(--accent,#e040fb) }
+.tool-tag { margin-top:6px;font-size:10px;color:var(--text2,#666) }
 
 @keyframes fadeIn { from{opacity:0} to{opacity:1} }
 </style>
@@ -572,6 +718,64 @@ function esc(str) {
     const d = document.createElement('div');
     d.textContent = str || '';
     return d.innerHTML;
+}
+
+// ========== SETTINGS ==========
+async function saveSettings() {
+    const data = {};
+    const fields = {
+        'STRIPE_PUBLISHABLE_KEY': 'setStripeKey',
+        'STRIPE_SECRET_KEY': 'setStripeSecret',
+        'STRIPE_WEBHOOK_SECRET': 'setStripeWebhook',
+        'PAYPAL_CLIENT_ID': 'setPaypalId',
+        'PAYPAL_SECRET': 'setPaypalSecret',
+        'PAYPAL_MODE': 'setPaypalMode',
+        'OPENAI_API_KEY': 'setOpenaiKey',
+        'OPENROUTER_API_KEY': 'setOpenrouterKey',
+        'ELEVENLABS_API_KEY': 'setElevenlabsKey',
+        'GROK_API_KEY': 'setGrokKey',
+        'REPLICATE_API_KEY': 'setReplicateKey',
+        'REPLICATE_MODEL_VERSION': 'setReplicateModel',
+    };
+    for (const [envKey, elId] of Object.entries(fields)) {
+        const val = document.getElementById(elId)?.value || '';
+        // Skip masked values
+        if (val && val !== '••••••••') {
+            data[envKey] = val;
+        }
+    }
+    const res = await adminPost('/api/admin/settings/save', data);
+    if (res.success) {
+        alert('Settings saved!');
+    } else {
+        alert(res.message || 'Save failed');
+    }
+}
+
+// ========== IMAGE GENERATION ==========
+async function generateImage() {
+    const id = document.getElementById('editId').value;
+    if (!id) return alert('Save companion first');
+
+    const btn = document.getElementById('genImageBtn');
+    btn.disabled = true;
+    btn.textContent = 'Generating...';
+
+    try {
+        const data = await adminPost('/api/admin/companion/generate-image', { id });
+        if (data.success && data.image_url) {
+            document.getElementById('editImageUrl').value = data.image_url;
+            document.getElementById('genImagePreview').style.display = 'block';
+            document.getElementById('genImageImg').src = data.image_url;
+        } else {
+            alert(data.message || 'Image generation failed');
+        }
+    } catch (e) {
+        alert('Connection error');
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'Generate';
 }
 
 loadStats();

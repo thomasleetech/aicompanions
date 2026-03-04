@@ -1,5 +1,5 @@
 <?php
-$pageTitle = View::e($gig['display_name'] ?? 'Chat') . ' - Companion';
+$pageTitle = View::e($gig['display_name'] ?? 'Chat') . ' - Lush';
 $pageLayout = 'chat';
 $companionName = View::e($gig['display_name'] ?? 'Companion');
 $hasPhotos = in_array('photos', $upgrades ?? []) || in_array('premium', $upgrades ?? []) || in_array('premium_plus', $upgrades ?? []);

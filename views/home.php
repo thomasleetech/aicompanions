@@ -1,4 +1,4 @@
-<?php $pageTitle = 'Companion - AI That Actually Gets You'; ?>
+<?php $pageTitle = 'Lush - AI That Actually Gets You'; ?>
 
 <section class="hero">
     <div class="hero-content">

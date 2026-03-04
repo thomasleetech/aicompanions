@@ -98,6 +98,15 @@ $router->get('/companion/{id}', [GigController::class, 'show']);
 $router->get('/login', [AuthController::class, 'showLogin']);
 $router->get('/register', [AuthController::class, 'showRegister']);
 $router->get('/logout', [AuthController::class, 'logout']);
+$router->get('/forgot-password', [AuthController::class, 'showForgotPassword']);
+$router->get('/reset-password', [AuthController::class, 'showResetPassword']);
+$router->get('/verify-email', [AuthController::class, 'verifyEmail']);
+$router->get('/terms', function() { View::render('terms', ['user' => Auth::user()]); });
+$router->get('/privacy', function() { View::render('privacy', ['user' => Auth::user()]); });
+$router->get('/profile', function() {
+    if (!Auth::check()) { View::redirect('/login'); return; }
+    View::render('profile', ['user' => Auth::user()]);
+});
 $router->get('/app', [ChatController::class, 'app']);
 $router->get('/chat/{id}', [ChatController::class, 'room']);
 $router->get('/admin', [AdminController::class, 'dashboard']);
@@ -106,6 +115,9 @@ $router->get('/admin/logout', [AdminController::class, 'logout']);
 // -- API --
 $router->post('/api/auth/login', [AuthController::class, 'login']);
 $router->post('/api/auth/register', [AuthController::class, 'register']);
+$router->post('/api/auth/forgot-password', [AuthController::class, 'forgotPassword']);
+$router->post('/api/auth/reset-password', [AuthController::class, 'resetPassword']);
+$router->post('/api/auth/resend-verification', [AuthController::class, 'resendVerification']);
 $router->post('/api/chat/send', [ChatController::class, 'sendMessage']);
 $router->post('/api/chat/history', [ChatController::class, 'getHistory']);
 $router->post('/api/chat/conversations', [ChatController::class, 'getConversations']);
@@ -117,6 +129,10 @@ $router->post('/api/profile/memories', [ProfileController::class, 'memories']);
 $router->post('/api/profile/memories/delete', [ProfileController::class, 'deleteMemory']);
 $router->post('/api/profile/inbox', [ProfileController::class, 'inbox']);
 $router->post('/api/profile/inbox/read', [ProfileController::class, 'readInbox']);
+$router->post('/api/notifications', [NotificationController::class, 'list']);
+$router->post('/api/notifications/read', [NotificationController::class, 'markRead']);
+$router->post('/api/notifications/settings', [NotificationController::class, 'settings']);
+$router->post('/api/notifications/settings/update', [NotificationController::class, 'updateSettings']);
 $router->post('/api/upgrade/purchase', [UpgradeController::class, 'purchase']);
 $router->post('/api/payment/stripe-checkout', [PaymentController::class, 'stripeCheckout']);
 $router->post('/api/payment/stripe-webhook', [PaymentController::class, 'stripeWebhook']);
@@ -134,6 +150,8 @@ $router->post('/api/admin/companion/save', [AdminController::class, 'saveCompani
 $router->post('/api/admin/companion/create', [AdminController::class, 'createCompanion']);
 $router->post('/api/admin/companion/delete', [AdminController::class, 'deleteCompanion']);
 $router->post('/api/admin/companion/preview-prompt', [AdminController::class, 'previewPrompt']);
+$router->post('/api/admin/companion/generate-image', [AdminController::class, 'generateImage']);
+$router->post('/api/admin/settings/save', [AdminController::class, 'saveSettings']);
 
 // Dispatch
 $router->dispatch($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI']);

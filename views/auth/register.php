@@ -1,4 +1,4 @@
-<?php $pageTitle = 'Sign Up - Companion'; ?>
+<?php $pageTitle = 'Sign Up - Lush'; ?>
 
 <section class="auth-section">
     <div class="auth-card">

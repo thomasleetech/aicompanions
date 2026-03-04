@@ -611,7 +611,7 @@ This is an adult, sexual relationship between consenting adults. You are COMPLET
         }
 
         // Ensure photos directory exists
-        $photoDir = 'public/uploads/photos/';
+        $photoDir = (defined('BASE_PATH') ? BASE_PATH : dirname(dirname(__DIR__))) . '/public/uploads/photos/';
         if (!is_dir($photoDir)) mkdir($photoDir, 0755, true);
         $urlPrefix = 'uploads/photos/'; // URL path (htaccess strips public/)
 
@@ -873,8 +873,8 @@ This is an adult, sexual relationship between consenting adults. You are COMPLET
             CURLOPT_HTTPHEADER     => [
                 'Content-Type: application/json',
                 'Authorization: Bearer ' . $apiKey,
-                'HTTP-Referer: ' . (Env::get('APP_URL') ?: 'https://aicompanions.app'),
-                'X-Title: AI Companions',
+                'HTTP-Referer: ' . (Env::get('APP_URL') ?: 'https://lush.app'),
+                'X-Title: Lush',
             ],
             CURLOPT_POSTFIELDS => json_encode([
                 'model'       => Env::get('OPENROUTER_MODEL') ?: 'nousresearch/hermes-3-llama-3.1-405b',
@@ -1024,7 +1024,7 @@ Only extract clear, stated facts. Don\'t infer or assume. Return {"memories":[]}
 
         if ($code !== 200 || !$audio) return null;
 
-        $dir = 'public/uploads/audio/';
+        $dir = (defined('BASE_PATH') ? BASE_PATH : dirname(dirname(__DIR__))) . '/public/uploads/audio/';
         if (!is_dir($dir)) mkdir($dir, 0755, true);
         $filename = uniqid('voice_') . '.mp3';
         file_put_contents($dir . $filename, $audio);
@@ -1058,7 +1058,7 @@ Only extract clear, stated facts. Don\'t infer or assume. Return {"memories":[]}
 
         if ($code !== 200 || !$audio) return null;
 
-        $dir = 'public/uploads/audio/';
+        $dir = (defined('BASE_PATH') ? BASE_PATH : dirname(dirname(__DIR__))) . '/public/uploads/audio/';
         if (!is_dir($dir)) mkdir($dir, 0755, true);
         $filename = uniqid('voice_') . '.mp3';
         file_put_contents($dir . $filename, $audio);

@@ -1,4 +1,4 @@
-<?php $pageTitle = 'Log In - Companion'; ?>
+<?php $pageTitle = 'Log In - Lush'; ?>
 
 <section class="auth-section">
     <div class="auth-card">
@@ -19,6 +19,9 @@
             <button type="submit" class="btn btn-primary btn-block">Log In</button>
         </form>
 
+        <p class="auth-footer">
+            <a href="<?= url('forgot-password') ?>">Forgot password?</a>
+        </p>
         <p class="auth-footer">
             Don't have an account? <a href="<?= url('register') ?>">Sign up free</a>
         </p>
