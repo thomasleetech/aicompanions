@@ -20,6 +20,10 @@ $hasVoice = in_array('voice', $upgrades ?? []) || in_array('premium', $upgrades 
                 <button class="btn btn-sm btn-ghost" onclick="toggleVoice()" id="voiceBtn" title="Toggle voice replies">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
                 </button>
+                <button class="btn btn-sm btn-ghost" onclick="toggleInbox()" id="inboxBtn" title="Inbox">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                    <span class="inbox-badge" id="inboxBadge" style="display:none">0</span>
+                </button>
                 <button class="btn btn-sm btn-ghost" onclick="toggleGiftShop()" id="giftBtn" title="Gift Shop">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12v10H4V12"/><path d="M2 7h20v5H2z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
                 </button>
@@ -158,6 +162,17 @@ $hasVoice = in_array('voice', $upgrades ?? []) || in_array('premium', $upgrades 
             </div>
         </div>
 
+        <!-- Inbox Drawer -->
+        <div class="inbox-drawer" id="inboxDrawer" style="display:none">
+            <div class="gift-shop-header">
+                <h4>Inbox</h4>
+                <button class="btn btn-sm btn-ghost" onclick="toggleInbox()">&times;</button>
+            </div>
+            <div class="inbox-messages" id="inboxMessages">
+                <div class="inbox-empty">No messages yet</div>
+            </div>
+        </div>
+
         <!-- Messages -->
         <div class="chat-messages" id="chatMessages">
             <div class="chat-loading" id="chatLoading">Loading messages...</div>
@@ -263,6 +278,47 @@ $hasVoice = in_array('voice', $upgrades ?? []) || in_array('premium', $upgrades 
     max-height: 90vh;
     border-radius: 8px;
 }
+
+/* Inbox */
+.inbox-drawer {
+    background: var(--bg-card, #1a1a2e);
+    border-bottom: 1px solid var(--border, #333);
+    padding: 12px 16px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+.inbox-messages { display: flex; flex-direction: column; gap: 8px; }
+.inbox-empty { color: var(--text-muted, #888); font-size: 13px; text-align: center; padding: 20px; }
+.inbox-item {
+    padding: 12px;
+    background: var(--bg-input, #252540);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.inbox-item:hover { background: var(--bg-hover, #303050); }
+.inbox-item.unread { border-left: 3px solid var(--accent, #e040fb); }
+.inbox-item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+.inbox-item-header strong { font-size: 13px; }
+.inbox-item-header small { color: var(--text-muted, #666); font-size: 10px; }
+.inbox-item-body { font-size: 12px; color: var(--text-muted, #aaa); line-height: 1.4; }
+.inbox-item-body strong { color: var(--text, #e0e0e0); font-size: 13px; }
+.inbox-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: #e040fb;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 700;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#inboxBtn { position: relative; }
 </style>
 
 <script>
@@ -502,5 +558,87 @@ document.querySelectorAll('.gift-item:not(.owned)').forEach(el => {
     });
 });
 
+// ========== INBOX ==========
+function toggleInbox() {
+    const drawer = document.getElementById('inboxDrawer');
+    const isOpen = drawer.style.display !== 'none';
+    drawer.style.display = isOpen ? 'none' : 'block';
+    if (!isOpen) loadInbox();
+}
+
+async function loadInbox() {
+    const fd = new FormData();
+    fd.append('gig_id', GIG_ID);
+    fd.append('_token', CSRF);
+
+    try {
+        const res = await fetch(BASE + '/api/profile/inbox', { method: 'POST', body: fd });
+        const data = await res.json();
+
+        if (data.success) {
+            const container = document.getElementById('inboxMessages');
+            if (!data.messages || data.messages.length === 0) {
+                container.innerHTML = '<div class="inbox-empty">No messages yet</div>';
+            } else {
+                container.innerHTML = data.messages.map(m => {
+                    const date = new Date(m.created_at).toLocaleDateString();
+                    const unread = m.is_read == 0 ? 'unread' : '';
+                    return `<div class="inbox-item ${unread}" onclick="readInboxItem(${m.id}, this)">
+                        <div class="inbox-item-header">
+                            <strong>${m.message_type === 'love_letter' ? 'Love Letter' : 'Message'}</strong>
+                            <small>${date}</small>
+                        </div>
+                        <div class="inbox-item-body">${renderContent(m.content)}</div>
+                    </div>`;
+                }).join('');
+            }
+
+            // Update badge
+            const badge = document.getElementById('inboxBadge');
+            if (data.unread > 0) {
+                badge.style.display = 'flex';
+                badge.textContent = data.unread;
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+    } catch (e) {}
+}
+
+async function readInboxItem(id, el) {
+    el.classList.remove('unread');
+    const fd = new FormData();
+    fd.append('message_id', id);
+    fd.append('_token', CSRF);
+    try {
+        await fetch(BASE + '/api/profile/inbox/read', { method: 'POST', body: fd });
+        // Update badge count
+        const badge = document.getElementById('inboxBadge');
+        const current = parseInt(badge.textContent) || 0;
+        if (current > 1) {
+            badge.textContent = current - 1;
+        } else {
+            badge.style.display = 'none';
+        }
+    } catch (e) {}
+}
+
+// Check for unread inbox on load
+async function checkInboxBadge() {
+    const fd = new FormData();
+    fd.append('gig_id', GIG_ID);
+    fd.append('_token', CSRF);
+    try {
+        const res = await fetch(BASE + '/api/profile/inbox', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (data.success && data.unread > 0) {
+            const badge = document.getElementById('inboxBadge');
+            badge.style.display = 'flex';
+            badge.textContent = data.unread;
+        }
+    } catch (e) {}
+}
+
 loadHistory();
+checkInboxBadge();
 </script>

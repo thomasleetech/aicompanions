@@ -528,7 +528,9 @@ function showModalTab(name) {
     document.querySelectorAll('.modal-tab-panel').forEach(p => p.style.display = 'none');
     document.querySelectorAll('.mtab').forEach(t => t.classList.remove('active'));
     document.getElementById('mtab-' + name).style.display = 'block';
-    event.target.classList.add('active');
+    document.querySelectorAll('.mtab').forEach(t => {
+        if (t.getAttribute('onclick')?.includes("'" + name + "'")) t.classList.add('active');
+    });
 }
 
 // ========== API USAGE ==========
@@ -559,7 +561,9 @@ function showTab(name) {
     document.querySelectorAll('.admin-panel').forEach(p => p.style.display = 'none');
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.getElementById('panel-' + name).style.display = 'block';
-    event.target.classList.add('active');
+    document.querySelectorAll('.tab').forEach(t => {
+        if (t.getAttribute('onclick')?.includes("'" + name + "'")) t.classList.add('active');
+    });
     if (name === 'companions') loadCompanions();
     if (name === 'api') loadApiUsage();
 }

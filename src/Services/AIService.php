@@ -57,6 +57,9 @@ class AIService
         // Process [PHOTO:] and [SPICY:] tags in response
         $result['content'] = self::processImageTags($result['content'], $gig, $upgrades, $userId);
 
+        // Process tool tags: [SEARCH:], [CREATIVE:], [EMAIL:], [VISION:]
+        $result['content'] = ToolService::processToolTags($result['content'], $gig, $upgrades, $userId);
+
         return $result;
     }
 
@@ -108,7 +111,10 @@ class AIService
             $upsellNote = "\n\n## Upsell Priority\nNEVER mention upgrades, gift shop, or locked features. Just be yourself.";
         }
 
-        return $persona . $traitPrompt . $guidelines . $upsellNote;
+        // Append tool instructions based on active upgrades
+        $toolPrompt = ToolService::buildToolPrompt($upgrades, $name);
+
+        return $persona . $traitPrompt . $guidelines . $toolPrompt . $upsellNote;
     }
 
     private static function buildBehavioralGuidelines(string $name, string $userName, string $type, bool $hasAdultMode, bool $hasPhotos, bool $hasSpicy, bool $hasVoice, bool $hasEmail, array $upgrades): string
@@ -1117,17 +1123,19 @@ Only extract clear, stated facts. Don\'t infer or assume. Return {"memories":[]}
         return json_decode($response, true) ?: ['error' => ['message' => 'Invalid response']];
     }
 
-    private static function logUsage(?int $userId, string $type, int $tokensIn, int $tokensOut): void
+    public static function logUsage(?int $userId, string $type, int $tokensIn, int $tokensOut): void
     {
         $costs = [
-            'openai_chat'    => [0.00015, 0.0006],
-            'openai_memory'  => [0.00015, 0.0006],
-            'openai_tts'     => [0.015, 0],
-            'openai_dalle'   => [0.04, 0],
-            'elevenlabs_tts' => [0.018, 0],
+            'openai_chat'     => [0.00015, 0.0006],
+            'openai_memory'   => [0.00015, 0.0006],
+            'openai_creative' => [0.00015, 0.0006],
+            'openai_tts'      => [0.015, 0],
+            'openai_dalle'    => [0.04, 0],
+            'elevenlabs_tts'  => [0.018, 0],
             'openrouter_chat' => [0.001, 0.001],
-            'grok_image'     => [0.05, 0],
+            'grok_image'      => [0.05, 0],
             'replicate_image' => [0.03, 0],
+            'web_search'      => [0.001, 0],
         ];
 
         $rate = $costs[$type] ?? [0, 0];

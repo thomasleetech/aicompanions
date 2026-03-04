@@ -93,4 +93,47 @@ class ProfileController
         Database::query("DELETE FROM user_memories WHERE id = ? AND user_id = ?", [$id, Auth::id()]);
         View::json(['success' => true]);
     }
+
+    // ========== INBOX ==========
+
+    public static function inbox(): void
+    {
+        if (!Auth::requireLogin()) return;
+
+        $gigId = (int) ($_POST['gig_id'] ?? 0);
+
+        $where = "WHERE user_id = ?";
+        $params = [Auth::id()];
+
+        if ($gigId) {
+            $where .= " AND gig_id = ?";
+            $params[] = $gigId;
+        }
+
+        $messages = Database::fetchAll(
+            "SELECT im.*, g.title as companion_name, g.image_url as companion_image
+             FROM inbox_messages im
+             LEFT JOIN gigs g ON im.gig_id = g.id
+             {$where}
+             ORDER BY im.created_at DESC LIMIT 50",
+            $params
+        );
+
+        // Count unread
+        $unread = Database::scalar(
+            "SELECT COUNT(*) FROM inbox_messages WHERE user_id = ? AND is_read = 0",
+            [Auth::id()]
+        );
+
+        View::json(['success' => true, 'messages' => $messages, 'unread' => (int) $unread]);
+    }
+
+    public static function readInbox(): void
+    {
+        if (!Auth::requireLogin()) return;
+
+        $id = (int) ($_POST['message_id'] ?? 0);
+        Database::query("UPDATE inbox_messages SET is_read = 1 WHERE id = ? AND user_id = ?", [$id, Auth::id()]);
+        View::json(['success' => true]);
+    }
 }

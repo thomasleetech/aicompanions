@@ -23,6 +23,7 @@
             <a href="<?= url('browse/ai-boyfriend') ?>">Boyfriends</a>
             <?php if (isset($user) && $user): ?>
                 <a href="<?= url('app') ?>" class="btn btn-primary">Open App</a>
+                <a href="<?= url('logout') ?>" class="btn btn-ghost">Logout</a>
             <?php else: ?>
                 <a href="<?= url('login') ?>" class="btn btn-ghost">Log In</a>
                 <a href="<?= url('register') ?>" class="btn btn-primary">Get Started</a>
