@@ -102,17 +102,34 @@ class ChatController
             'content'         => $message,
         ]);
 
-        // Get chat history (last 20 messages for context)
+        // Check for enhanced memory upgrade
+        $hasEndlessMemory = in_array('endless_memory', $upgrades) || in_array('premium_plus', $upgrades);
+        $msgLimit = $hasEndlessMemory ? 50 : 20;
+        $memLimit = $hasEndlessMemory ? 50 : 20;
+
+        // Get chat history
         $history = Database::fetchAll(
-            "SELECT role, content FROM chat_messages WHERE conversation_id = ? ORDER BY created_at DESC LIMIT 20",
-            [$convId]
+            "SELECT role, content FROM chat_messages WHERE conversation_id = ? ORDER BY created_at DESC LIMIT ?",
+            [$convId, $msgLimit]
         );
         $history = array_reverse($history);
 
+        // For endless memory: generate a summary of older messages beyond the window
+        $conversationSummary = null;
+        if ($hasEndlessMemory) {
+            $totalMsgs = (int) Database::scalar(
+                "SELECT COUNT(*) FROM chat_messages WHERE conversation_id = ?",
+                [$convId]
+            );
+            if ($totalMsgs > $msgLimit) {
+                $conversationSummary = self::getConversationSummary($convId, $msgLimit);
+            }
+        }
+
         // Get memories for this user+companion pair
         $memories = Database::fetchAll(
-            "SELECT memory_key, memory_value, memory_type FROM user_memories WHERE user_id = ? AND gig_id = ? ORDER BY last_referenced DESC, confidence DESC LIMIT 20",
-            [Auth::id(), $gigId]
+            "SELECT memory_key, memory_value, memory_type FROM user_memories WHERE user_id = ? AND gig_id = ? ORDER BY last_referenced DESC, confidence DESC LIMIT ?",
+            [Auth::id(), $gigId, $memLimit]
         );
 
         // Get user profile facts
@@ -128,7 +145,7 @@ class ChatController
         $upgrades = self::getUserUpgrades(Auth::id(), $gigId);
 
         // Call AI with full context
-        $aiResult = AIService::chat($gig, $history, $memories, $userFacts, $upgrades, Auth::id());
+        $aiResult = AIService::chat($gig, $history, $memories, $userFacts, $upgrades, Auth::id(), $conversationSummary);
 
         if (isset($aiResult['error'])) {
             View::json(['success' => false, 'message' => 'AI service error: ' . $aiResult['error']]);
@@ -295,6 +312,73 @@ class ChatController
             }
         } catch (Exception $e) {
             // Non-critical
+        }
+    }
+
+    // ========== CONVERSATION SUMMARY (Endless Memory) ==========
+
+    private static function getConversationSummary(int $convId, int $recentLimit): ?string
+    {
+        try {
+            // Check for cached summary
+            $cached = Database::fetch(
+                "SELECT summary, message_count FROM conversation_summaries WHERE conversation_id = ?",
+                [$convId]
+            );
+
+            $totalMsgs = (int) Database::scalar(
+                "SELECT COUNT(*) FROM chat_messages WHERE conversation_id = ?",
+                [$convId]
+            );
+
+            // Use cached summary if it covers enough messages
+            if ($cached && ($totalMsgs - $recentLimit - ($cached['message_count'] ?? 0)) < 20) {
+                return $cached['summary'];
+            }
+
+            // Get older messages that won't be in the context window
+            $olderMsgs = Database::fetchAll(
+                "SELECT role, content FROM chat_messages WHERE conversation_id = ? ORDER BY created_at ASC LIMIT ?",
+                [$convId, max(0, $totalMsgs - $recentLimit)]
+            );
+
+            if (count($olderMsgs) < 5) return null;
+
+            // Build text for summarization
+            $transcript = '';
+            foreach (array_slice($olderMsgs, -60) as $m) {
+                $role = $m['role'] === 'user' ? 'User' : 'Companion';
+                $transcript .= $role . ': ' . mb_substr($m['content'], 0, 200) . "\n";
+            }
+
+            $apiKey = Env::get('OPENAI_API_KEY');
+            if (!$apiKey) return null;
+
+            $response = AIService::request('https://api.openai.com/v1/chat/completions', [
+                'model'       => 'gpt-4o-mini',
+                'messages'    => [
+                    ['role' => 'system', 'content' => 'Summarize this conversation between a user and their AI companion. Focus on: key events, emotional moments, personal details shared, relationship milestones, inside jokes, and important topics discussed. Be concise but thorough. Write in present tense as notes.'],
+                    ['role' => 'user', 'content' => $transcript],
+                ],
+                'max_tokens'  => 400,
+                'temperature' => 0.3,
+            ], $apiKey);
+
+            $summary = $response['choices'][0]['message']['content'] ?? null;
+
+            if ($summary) {
+                // Cache the summary
+                Database::query(
+                    "INSERT INTO conversation_summaries (conversation_id, summary, message_count)
+                     VALUES (?, ?, ?)
+                     ON DUPLICATE KEY UPDATE summary = VALUES(summary), message_count = VALUES(message_count), updated_at = NOW()",
+                    [$convId, $summary, count($olderMsgs)]
+                );
+            }
+
+            return $summary;
+        } catch (Exception $e) {
+            return null;
         }
     }
 

@@ -1,4 +1,4 @@
-<?php $pageTitle = 'Forgot Password - Lush'; ?>
+<?php $pageTitle = 'Forgot Password - Amorai'; ?>
 
 <style>
 .auth-section {

@@ -266,6 +266,7 @@ class AdminController
             'PAYPAL_CLIENT_ID', 'PAYPAL_SECRET', 'PAYPAL_MODE',
             'OPENAI_API_KEY', 'OPENROUTER_API_KEY', 'OPENROUTER_MODEL',
             'ELEVENLABS_API_KEY', 'GROK_API_KEY', 'REPLICATE_API_KEY', 'REPLICATE_MODEL_VERSION',
+            'DEFAULT_THEME',
         ];
 
         foreach ($validKeys as $key) {

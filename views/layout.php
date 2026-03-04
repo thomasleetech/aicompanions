@@ -1,10 +1,19 @@
 <!DOCTYPE html>
-<html lang="en">
+<?php
+    // Theme: URL param > cookie > admin default > midnight
+    $theme = $_GET['theme'] ?? $_COOKIE['amorai_theme'] ?? Env::get('DEFAULT_THEME') ?? 'midnight';
+    $validThemes = ['midnight', 'rose', 'ocean', 'ember', 'daylight'];
+    if (!in_array($theme, $validThemes)) $theme = 'midnight';
+    if (isset($_GET['theme']) && in_array($_GET['theme'], $validThemes)) {
+        setcookie('amorai_theme', $_GET['theme'], time() + 86400 * 365, '/');
+    }
+?>
+<html lang="en" data-theme="<?= $theme ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= View::e($pageTitle ?? 'Lush - AI That Actually Gets You') ?></title>
-    <meta name="description" content="<?= View::e($pageDesc ?? 'Meet your AI companion on Lush. Real conversations. Zero judgment. Available 24/7.') ?>">
+    <title><?= View::e($pageTitle ?? 'Amorai - AI That Actually Gets You') ?></title>
+    <meta name="description" content="<?= View::e($pageDesc ?? 'Meet your AI companion on Amorai. Real conversations. Zero judgment. Available 24/7.') ?>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<?= url('css/app.css') ?>">
@@ -14,8 +23,8 @@
 <body>
     <header id="header">
         <a href="<?= url('/') ?>" class="logo">
-            <div class="logo-icon">L</div>
-            <span>Lush</span>
+            <div class="logo-icon">A</div>
+            <span>Amorai</span>
         </a>
         <nav id="nav">
             <a href="<?= url('browse') ?>">Browse</a>
@@ -47,8 +56,8 @@
         <div class="footer-grid">
             <div class="footer-brand">
                 <div class="logo">
-                    <div class="logo-icon">L</div>
-                    <span>Lush</span>
+                    <div class="logo-icon">A</div>
+                    <span>Amorai</span>
                 </div>
                 <p>AI companions that actually get you. Always here when you need someone.</p>
             </div>
@@ -71,7 +80,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            &copy; <?= date('Y') ?> Lush. All rights reserved.
+            &copy; <?= date('Y') ?> Amorai. All rights reserved.
         </div>
     </footer>
 

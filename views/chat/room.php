@@ -1,5 +1,5 @@
 <?php
-$pageTitle = View::e($gig['display_name'] ?? 'Chat') . ' - Lush';
+$pageTitle = View::e($gig['display_name'] ?? 'Chat') . ' - Amorai';
 $pageLayout = 'chat';
 $companionName = View::e($gig['display_name'] ?? 'Companion');
 $hasPhotos = in_array('photos', $upgrades ?? []) || in_array('premium', $upgrades ?? []) || in_array('premium_plus', $upgrades ?? []);
@@ -81,6 +81,17 @@ $hasVoice = in_array('voice', $upgrades ?? []) || in_array('premium', $upgrades 
                     </div>
                     <span class="gift-badge new">NEW</span>
                     <span class="gift-price"><?= in_array('videos', $upgrades ?? []) ? 'Owned' : '$14.99' ?></span>
+                </div>
+
+                <div class="gift-category">Memory</div>
+                <div class="gift-item <?= in_array('endless_memory', $upgrades ?? []) ? 'owned' : '' ?>" data-upgrade="endless_memory" data-price="14.99">
+                    <span class="gift-icon">🧠</span>
+                    <div class="gift-info">
+                        <strong>Endless Memory</strong>
+                        <small><?= $companionName ?> remembers everything forever</small>
+                    </div>
+                    <span class="gift-badge new">NEW</span>
+                    <span class="gift-price"><?= in_array('endless_memory', $upgrades ?? []) ? 'Owned' : '$14.99' ?></span>
                 </div>
 
                 <div class="gift-category">Intelligence</div>
@@ -244,6 +255,29 @@ $hasVoice = in_array('voice', $upgrades ?? []) || in_array('premium', $upgrades 
 .gift-item.vip { border-color: gold; background: linear-gradient(135deg, rgba(255,215,0,0.05), rgba(255,215,0,0.02)); }
 .gift-price s { color: var(--text-muted, #666); font-size: 11px; margin-right: 2px; }
 
+/* Voice play button */
+.voice-play-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255,255,255,0.12);
+    color: var(--text2, #aaa);
+    cursor: pointer;
+    margin-left: 8px;
+    vertical-align: middle;
+    transition: all 0.2s;
+    padding: 0;
+}
+.voice-play-btn:hover { background: rgba(255,255,255,0.2); color: var(--text, #fff); }
+.voice-play-btn.playing { background: var(--accent, #10b981); color: #000; }
+.message-user .voice-play-btn { background: rgba(0,0,0,0.15); color: rgba(0,0,0,0.6); }
+.message-user .voice-play-btn:hover { background: rgba(0,0,0,0.25); color: #000; }
+.message-user .voice-play-btn.playing { background: rgba(0,0,0,0.3); color: #000; }
+
 /* Chat images */
 .message-bubble img {
     max-width: 280px;
@@ -339,7 +373,7 @@ async function loadHistory() {
         document.getElementById('chatLoading').style.display = 'none';
 
         if (data.success && data.messages) {
-            data.messages.forEach(m => addMessage(m.role, m.content, m.audio_url));
+            data.messages.forEach(m => addMessage(m.role, m.content, m.audio_url, false));
             scrollToBottom();
         }
     } catch (e) {
@@ -424,19 +458,57 @@ function renderContent(content) {
     return html;
 }
 
-function addMessage(role, content, audioUrl) {
+function addMessage(role, content, audioUrl, autoplay) {
     const container = document.getElementById('chatMessages');
     const div = document.createElement('div');
     div.className = 'message message-' + role;
 
-    let html = '<div class="message-bubble">' + renderContent(content) + '</div>';
+    let html = '<div class="message-bubble">' + renderContent(content);
 
     if (audioUrl) {
-        html += '<audio controls class="message-audio"><source src="' + BASE + '/' + audioUrl + '" type="audio/mpeg"></audio>';
+        const fullUrl = BASE + '/' + audioUrl;
+        html += '<button class="voice-play-btn" onclick="playVoice(this, \'' + fullUrl + '\')" title="Play voice">'
+            + '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>'
+            + '</button>';
     }
 
+    html += '</div>';
     div.innerHTML = html;
     container.appendChild(div);
+
+    // Autoplay new voice messages
+    if (audioUrl && autoplay !== false) {
+        playVoice(div.querySelector('.voice-play-btn'), BASE + '/' + audioUrl);
+    }
+}
+
+let currentAudio = null;
+function playVoice(btn, url) {
+    // Stop any currently playing audio
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio = null;
+        document.querySelectorAll('.voice-play-btn.playing').forEach(b => b.classList.remove('playing'));
+    }
+
+    if (btn && btn.classList.contains('playing')) {
+        btn.classList.remove('playing');
+        return;
+    }
+
+    const audio = new Audio(url);
+    currentAudio = audio;
+    if (btn) btn.classList.add('playing');
+
+    audio.play().catch(() => {});
+    audio.onended = () => {
+        currentAudio = null;
+        if (btn) btn.classList.remove('playing');
+    };
+    audio.onerror = () => {
+        currentAudio = null;
+        if (btn) btn.classList.remove('playing');
+    };
 }
 
 function addSystemMessage(text) {

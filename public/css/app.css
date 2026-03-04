@@ -2,8 +2,8 @@
    AI Companions - Design System
    ======================================== */
 
-/* Variables */
-:root {
+/* Variables — Default: Midnight */
+:root, [data-theme="midnight"] {
     --bg: #0a0a0a;
     --bg2: #111111;
     --bg3: #1a1a1a;
@@ -23,6 +23,80 @@
     --shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
     --transition: 0.2s ease;
 }
+
+/* Theme: Rose — warm pink/magenta tones */
+[data-theme="rose"] {
+    --bg: #0d0a0e;
+    --bg2: #161018;
+    --bg3: #1f1522;
+    --bg4: #2a1d2e;
+    --text: #f5e6f0;
+    --text2: #a07090;
+    --text3: #6a4560;
+    --accent: #e040fb;
+    --accent-hover: #ce35e6;
+    --accent-glow: rgba(224, 64, 251, 0.15);
+    --red: #ff4081;
+    --border: #2a1d2e;
+    --border-light: #3d2840;
+    --shadow: 0 4px 24px rgba(224, 64, 251, 0.1);
+}
+
+/* Theme: Ocean — cool blue tones */
+[data-theme="ocean"] {
+    --bg: #060d14;
+    --bg2: #0a1520;
+    --bg3: #101e2c;
+    --bg4: #172838;
+    --text: #e0f0ff;
+    --text2: #6a9cc0;
+    --text3: #3d6a8a;
+    --accent: #38bdf8;
+    --accent-hover: #2da6e0;
+    --accent-glow: rgba(56, 189, 248, 0.15);
+    --red: #f87171;
+    --border: #172838;
+    --border-light: #1e3548;
+    --shadow: 0 4px 24px rgba(56, 189, 248, 0.1);
+}
+
+/* Theme: Ember — warm amber/orange tones */
+[data-theme="ember"] {
+    --bg: #0e0a06;
+    --bg2: #16120a;
+    --bg3: #201a10;
+    --bg4: #2c2418;
+    --text: #fff5e6;
+    --text2: #b09060;
+    --text3: #7a6040;
+    --accent: #f59e0b;
+    --accent-hover: #d98b08;
+    --accent-glow: rgba(245, 158, 11, 0.15);
+    --red: #ef4444;
+    --border: #2c2418;
+    --border-light: #3d3220;
+    --shadow: 0 4px 24px rgba(245, 158, 11, 0.1);
+}
+
+/* Theme: Daylight — light mode */
+[data-theme="daylight"] {
+    --bg: #f8f9fa;
+    --bg2: #ffffff;
+    --bg3: #f0f1f3;
+    --bg4: #e8eaed;
+    --text: #1a1a2e;
+    --text2: #6b7280;
+    --text3: #9ca3af;
+    --accent: #10b981;
+    --accent-hover: #0d9f72;
+    --accent-glow: rgba(16, 185, 129, 0.1);
+    --red: #ef4444;
+    --border: #e5e7eb;
+    --border-light: #d1d5db;
+    --shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+}
+[data-theme="daylight"] header { background: rgba(255,255,255,0.9); border-bottom-color: var(--border); }
+[data-theme="daylight"] .gradient-text { background: linear-gradient(135deg, #059669, #10b981, #34d399); -webkit-background-clip: text; background-clip: text; }
 
 /* Reset */
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -610,7 +684,7 @@ footer { padding: 56px 24px; border-top: 1px solid var(--border); }
 .message-assistant .message-bubble { background: var(--bg3); border-bottom-left-radius: 4px; }
 .message-bubble.system { background: rgba(255, 255, 255, 0.05); color: var(--text2); font-size: 13px; }
 
-.message-audio { margin-top: 8px; max-width: 300px; height: 36px; }
+/* Voice play button in chat - styles in room.php */
 
 /* Typing indicator */
 .typing-indicator .message-bubble { display: flex; gap: 4px; padding: 16px 20px; }

@@ -1,4 +1,4 @@
-<?php $pageTitle = 'Admin Dashboard - Lush'; ?>
+<?php $pageTitle = 'Admin Dashboard - Amorai'; ?>
 
 <section class="admin-section">
     <div class="admin-header">
@@ -104,6 +104,43 @@
                 <div class="form-group"><label>Grok API Key</label><input type="password" id="setGrokKey" value="<?= View::e(Env::get('GROK_API_KEY') ? '••••••••' : '') ?>" placeholder="xai-..."></div>
                 <div class="form-group"><label>Replicate API Key</label><input type="password" id="setReplicateKey" value="<?= View::e(Env::get('REPLICATE_API_KEY') ? '••••••••' : '') ?>" placeholder="r8_..."></div>
                 <div class="form-group"><label>Replicate Model Version</label><input type="text" id="setReplicateModel" value="<?= View::e(Env::get('REPLICATE_MODEL_VERSION') ?: '') ?>" placeholder="model version hash"></div>
+            </div>
+            <div class="settings-card" style="grid-column:1/-1">
+                <h4>Theme & Appearance</h4>
+                <p style="font-size:12px;color:var(--text2,#888);margin-bottom:12px">Select the default theme for all users. Users can also switch via <code>?theme=name</code> URL parameter.</p>
+                <div class="theme-picker" style="display:flex;gap:12px;flex-wrap:wrap">
+                    <?php $currentTheme = Env::get('DEFAULT_THEME') ?: 'midnight'; ?>
+                    <label class="theme-option" onclick="previewTheme('midnight')">
+                        <input type="radio" name="theme" value="midnight" <?= $currentTheme === 'midnight' ? 'checked' : '' ?>>
+                        <div class="theme-swatch" style="background:linear-gradient(135deg,#0a0a0a,#1a1a1a);border:2px solid <?= $currentTheme === 'midnight' ? '#10b981' : '#333' ?>">
+                            <span style="color:#10b981;font-weight:700;font-size:11px">Midnight</span>
+                        </div>
+                    </label>
+                    <label class="theme-option" onclick="previewTheme('rose')">
+                        <input type="radio" name="theme" value="rose" <?= $currentTheme === 'rose' ? 'checked' : '' ?>>
+                        <div class="theme-swatch" style="background:linear-gradient(135deg,#0d0a0e,#1f1522);border:2px solid <?= $currentTheme === 'rose' ? '#e040fb' : '#333' ?>">
+                            <span style="color:#e040fb;font-weight:700;font-size:11px">Rose</span>
+                        </div>
+                    </label>
+                    <label class="theme-option" onclick="previewTheme('ocean')">
+                        <input type="radio" name="theme" value="ocean" <?= $currentTheme === 'ocean' ? 'checked' : '' ?>>
+                        <div class="theme-swatch" style="background:linear-gradient(135deg,#060d14,#101e2c);border:2px solid <?= $currentTheme === 'ocean' ? '#38bdf8' : '#333' ?>">
+                            <span style="color:#38bdf8;font-weight:700;font-size:11px">Ocean</span>
+                        </div>
+                    </label>
+                    <label class="theme-option" onclick="previewTheme('ember')">
+                        <input type="radio" name="theme" value="ember" <?= $currentTheme === 'ember' ? 'checked' : '' ?>>
+                        <div class="theme-swatch" style="background:linear-gradient(135deg,#0e0a06,#201a10);border:2px solid <?= $currentTheme === 'ember' ? '#f59e0b' : '#333' ?>">
+                            <span style="color:#f59e0b;font-weight:700;font-size:11px">Ember</span>
+                        </div>
+                    </label>
+                    <label class="theme-option" onclick="previewTheme('daylight')">
+                        <input type="radio" name="theme" value="daylight" <?= $currentTheme === 'daylight' ? 'checked' : '' ?>>
+                        <div class="theme-swatch" style="background:linear-gradient(135deg,#f8f9fa,#e8eaed);border:2px solid <?= $currentTheme === 'daylight' ? '#10b981' : '#ccc' ?>">
+                            <span style="color:#1a1a2e;font-weight:700;font-size:11px">Daylight</span>
+                        </div>
+                    </label>
+                </div>
             </div>
         </div>
         <div style="padding:0 0 16px"><button class="btn btn-primary" onclick="saveSettings()">Save Settings</button> <small style="color:var(--text2,#888);margin-left:8px">Settings are saved to .env file</small></div>
@@ -278,6 +315,15 @@
                 <div class="tools-grid">
                     <div class="tool-card">
                         <div class="tool-header">
+                            <span class="tool-icon">🧠</span>
+                            <strong>Endless Memory</strong>
+                        </div>
+                        <p>Companion remembers everything: 50 messages context, 50 memory slots, and AI-generated summaries of older conversations.</p>
+                        <small>Upgrade: <code>endless_memory</code> ($14.99) or <code>premium_plus</code></small>
+                        <div class="tool-tag">Default: 20 messages, 20 memories, no summaries</div>
+                    </div>
+                    <div class="tool-card">
+                        <div class="tool-header">
                             <span class="tool-icon">🌐</span>
                             <strong>Internet Access</strong>
                         </div>
@@ -438,6 +484,13 @@
 .tool-card small { font-size:10px;color:var(--text2,#666) }
 .tool-card code { background:var(--bg2,#1a1a2e);padding:1px 4px;border-radius:3px;font-size:10px;color:var(--accent,#e040fb) }
 .tool-tag { margin-top:6px;font-size:10px;color:var(--text2,#666) }
+
+/* Theme Picker */
+.theme-option { cursor:pointer }
+.theme-option input { display:none }
+.theme-swatch { width:100px;height:60px;border-radius:8px;display:flex;align-items:center;justify-content:center;transition:all 0.2s;cursor:pointer }
+.theme-swatch:hover { transform:scale(1.05) }
+.theme-option input:checked + .theme-swatch { box-shadow:0 0 0 2px var(--accent,#10b981);transform:scale(1.05) }
 
 @keyframes fadeIn { from{opacity:0} to{opacity:1} }
 </style>
@@ -721,6 +774,10 @@ function esc(str) {
 }
 
 // ========== SETTINGS ==========
+function previewTheme(name) {
+    document.documentElement.setAttribute('data-theme', name);
+}
+
 async function saveSettings() {
     const data = {};
     const fields = {
@@ -744,6 +801,13 @@ async function saveSettings() {
             data[envKey] = val;
         }
     }
+
+    // Include selected theme
+    const themeRadio = document.querySelector('input[name="theme"]:checked');
+    if (themeRadio) {
+        data['DEFAULT_THEME'] = themeRadio.value;
+    }
+
     const res = await adminPost('/api/admin/settings/save', data);
     if (res.success) {
         alert('Settings saved!');

@@ -114,9 +114,9 @@ class Auth
             );
 
             $resetUrl = (Env::get('APP_URL') ?: '') . url('reset-password') . '?token=' . $token;
-            $subject = "Lush - Reset Your Password";
-            $body = "Hi,\n\nYou requested a password reset. Click the link below:\n\n{$resetUrl}\n\nThis link expires in 1 hour.\n\nIf you didn't request this, ignore this email.\n\n- Lush";
-            @mail($user['email'], $subject, $body, "From: noreply@" . ($_SERVER['HTTP_HOST'] ?? 'lush.app') . "\r\nContent-Type: text/plain; charset=UTF-8");
+            $subject = "Amorai - Reset Your Password";
+            $body = "Hi,\n\nYou requested a password reset. Click the link below:\n\n{$resetUrl}\n\nThis link expires in 1 hour.\n\nIf you didn't request this, ignore this email.\n\n- Amorai";
+            @mail($user['email'], $subject, $body, "From: noreply@" . ($_SERVER['HTTP_HOST'] ?? 'amorai.app') . "\r\nContent-Type: text/plain; charset=UTF-8");
         } catch (Exception $e) {
             // Column might not exist yet
         }
@@ -163,9 +163,9 @@ class Auth
         }
 
         $verifyUrl = (Env::get('APP_URL') ?: '') . url('verify-email') . '?token=' . $token;
-        $subject = "Lush - Verify Your Email";
-        $body = "Welcome to Lush!\n\nClick the link below to verify your email:\n\n{$verifyUrl}\n\n- Lush";
-        @mail($user['email'], $subject, $body, "From: noreply@" . ($_SERVER['HTTP_HOST'] ?? 'lush.app') . "\r\nContent-Type: text/plain; charset=UTF-8");
+        $subject = "Amorai - Verify Your Email";
+        $body = "Welcome to Amorai!\n\nClick the link below to verify your email:\n\n{$verifyUrl}\n\n- Amorai";
+        @mail($user['email'], $subject, $body, "From: noreply@" . ($_SERVER['HTTP_HOST'] ?? 'amorai.app') . "\r\nContent-Type: text/plain; charset=UTF-8");
     }
 
     public static function verifyEmail(string $token): array

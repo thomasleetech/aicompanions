@@ -5,7 +5,7 @@ class AIService
     // ========================================================
     // MAIN CHAT — builds full persona, routes to correct provider
     // ========================================================
-    public static function chat(array $gig, array $history, array $memories = [], array $userFacts = [], array $upgrades = [], ?int $userId = null): array
+    public static function chat(array $gig, array $history, array $memories = [], array $userFacts = [], array $upgrades = [], ?int $userId = null, ?string $conversationSummary = null): array
     {
         $userName = 'babe';
         if ($userId) {
@@ -17,9 +17,16 @@ class AIService
         }
 
         $hasAdultMode = in_array('spicy_personality', $upgrades) || in_array('premium_plus', $upgrades);
+        $hasEndlessMemory = in_array('endless_memory', $upgrades) || in_array('premium_plus', $upgrades);
 
         // Build the full enhanced persona
         $systemPrompt = self::buildEnhancedPersona($gig, $upgrades, $userName, $hasAdultMode);
+
+        // Append conversation summary for endless memory users
+        if ($conversationSummary && $hasEndlessMemory) {
+            $systemPrompt .= "\n\n## Summary of your earlier conversations with this user:\n" . $conversationSummary;
+            $systemPrompt .= "\nUse this history naturally. You lived through these moments together — reference them when relevant.";
+        }
 
         // Append memories
         if (!empty($memories)) {
@@ -35,9 +42,10 @@ class AIService
             $systemPrompt .= "\n\nUser's personal info: " . implode(', ', array_filter($userFacts));
         }
 
-        // Build messages array
+        // Build messages array — use more context for endless memory
+        $contextLimit = $hasEndlessMemory ? 50 : 20;
         $apiMessages = [['role' => 'system', 'content' => $systemPrompt]];
-        foreach (array_slice($history, -20) as $msg) {
+        foreach (array_slice($history, -$contextLimit) as $msg) {
             if ($msg['role'] !== 'system') {
                 $apiMessages[] = ['role' => $msg['role'], 'content' => $msg['content']];
             }
@@ -873,8 +881,8 @@ This is an adult, sexual relationship between consenting adults. You are COMPLET
             CURLOPT_HTTPHEADER     => [
                 'Content-Type: application/json',
                 'Authorization: Bearer ' . $apiKey,
-                'HTTP-Referer: ' . (Env::get('APP_URL') ?: 'https://lush.app'),
-                'X-Title: Lush',
+                'HTTP-Referer: ' . (Env::get('APP_URL') ?: 'https://amorai.app'),
+                'X-Title: Amorai',
             ],
             CURLOPT_POSTFIELDS => json_encode([
                 'model'       => Env::get('OPENROUTER_MODEL') ?: 'nousresearch/hermes-3-llama-3.1-405b',

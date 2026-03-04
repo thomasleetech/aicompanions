@@ -1,4 +1,4 @@
-<?php $pageTitle = 'My Profile - Lush'; ?>
+<?php $pageTitle = 'My Profile - Amorai'; ?>
 
 <style>
 .profile-page {
@@ -332,7 +332,7 @@
 
 <div class="profile-page">
     <h1>My Profile</h1>
-    <p class="profile-subtitle">Manage your Lush account settings and preferences</p>
+    <p class="profile-subtitle">Manage your Amorai account settings and preferences</p>
 
     <!-- Profile Header Card -->
     <div class="profile-card">

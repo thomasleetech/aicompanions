@@ -1,4 +1,4 @@
-<?php $pageTitle = 'Privacy Policy - Lush'; ?>
+<?php $pageTitle = 'Privacy Policy - Amorai'; ?>
 
 <style>
 .legal-content {
@@ -76,12 +76,12 @@
     <h1>Privacy Policy</h1>
     <p class="last-updated">Last updated: <?= date('F j, Y') ?></p>
 
-    <p>At Lush, your privacy matters. This Privacy Policy explains what information we collect, how we use it, how we protect it, and your rights regarding your personal data. By using the Lush platform (the "Service"), you agree to the practices described in this policy.</p>
+    <p>At Amorai, your privacy matters. This Privacy Policy explains what information we collect, how we use it, how we protect it, and your rights regarding your personal data. By using the Amorai platform (the "Service"), you agree to the practices described in this policy.</p>
 
     <h2>1. Information We Collect</h2>
 
     <h3>1.1 Account Information</h3>
-    <p>When you create a Lush account, we collect:</p>
+    <p>When you create a Amorai account, we collect:</p>
     <ul>
         <li><strong>Username</strong> and <strong>display name</strong></li>
         <li><strong>Email address</strong></li>
@@ -119,7 +119,7 @@
     </ul>
 
     <h2>2. How We Use Your Data</h2>
-    <p>Lush uses your information for the following purposes:</p>
+    <p>Amorai uses your information for the following purposes:</p>
     <ul>
         <li><strong>Provide the Service:</strong> Deliver AI companion conversations, maintain your account, and process payments</li>
         <li><strong>Personalization:</strong> Remember your preferences and conversation history to deliver a better experience</li>
@@ -161,7 +161,7 @@
     <p>When you delete your account, we will remove your personal data within <strong>30 days</strong>, except where retention is required by law.</p>
 
     <h2>4. Cookies and Tracking</h2>
-    <p>Lush uses cookies and similar technologies to:</p>
+    <p>Amorai uses cookies and similar technologies to:</p>
     <ul>
         <li><strong>Essential cookies:</strong> Maintain your login session, store preferences, and provide CSRF protection</li>
         <li><strong>Analytics cookies:</strong> Understand how users interact with the Service so we can improve it</li>
@@ -170,23 +170,23 @@
     <p>We do <strong>not</strong> use third-party advertising or tracking cookies. You can manage cookie preferences through your browser settings. Note that disabling essential cookies may prevent you from using certain features of the Service.</p>
 
     <h2>5. Data Sharing</h2>
-    <p>Lush does not sell your personal data. We may share limited information with third parties only in the following circumstances:</p>
+    <p>Amorai does not sell your personal data. We may share limited information with third parties only in the following circumstances:</p>
     <ul>
         <li><strong>With your consent:</strong> When you explicitly authorize sharing</li>
         <li><strong>Service providers:</strong> Trusted third-party services that help us operate the platform (see Section 6)</li>
         <li><strong>Legal requirements:</strong> When required by law, subpoena, court order, or government request</li>
-        <li><strong>Safety:</strong> To protect the safety, rights, or property of Lush, our users, or the public</li>
+        <li><strong>Safety:</strong> To protect the safety, rights, or property of Amorai, our users, or the public</li>
         <li><strong>Business transfers:</strong> In connection with a merger, acquisition, or sale of assets, with appropriate confidentiality protections</li>
     </ul>
 
     <h2>6. Third-Party Services</h2>
-    <p>Lush integrates with the following third-party services to provide the platform:</p>
+    <p>Amorai integrates with the following third-party services to provide the platform:</p>
 
     <h3>OpenAI</h3>
     <p>We use OpenAI's API to power AI companion conversations. Your chat messages are sent to OpenAI for processing. OpenAI's data usage policies apply to this processing. We encourage you to review <a href="https://openai.com/policies/privacy-policy" target="_blank" rel="noopener">OpenAI's Privacy Policy</a>.</p>
 
     <h3>Stripe</h3>
-    <p>We use Stripe to process credit and debit card payments. Stripe collects and processes payment information in accordance with their <a href="https://stripe.com/privacy" target="_blank" rel="noopener">Privacy Policy</a>. Lush does not have access to your full card details.</p>
+    <p>We use Stripe to process credit and debit card payments. Stripe collects and processes payment information in accordance with their <a href="https://stripe.com/privacy" target="_blank" rel="noopener">Privacy Policy</a>. Amorai does not have access to your full card details.</p>
 
     <h3>PayPal</h3>
     <p>We offer PayPal as an alternative payment method. When you pay via PayPal, your transaction is subject to <a href="https://www.paypal.com/webapps/mpp/ua/privacy-full" target="_blank" rel="noopener">PayPal's Privacy Policy</a>.</p>
@@ -213,10 +213,10 @@
         <li><strong>Restriction:</strong> Request that we restrict processing of your data under certain circumstances</li>
         <li><strong>Withdraw consent:</strong> Where processing is based on consent, you may withdraw it at any time</li>
     </ul>
-    <p>To exercise any of these rights, please contact us at <strong>privacy@lush.com</strong>. We will respond to your request within 30 days.</p>
+    <p>To exercise any of these rights, please contact us at <strong>privacy@amorai.com</strong>. We will respond to your request within 30 days.</p>
 
     <h2>9. Account and Data Deletion</h2>
-    <p>You can delete your Lush account at any time through your <a href="<?= url('profile') ?>">profile settings</a> or by contacting our support team. When you delete your account:</p>
+    <p>You can delete your Amorai account at any time through your <a href="<?= url('profile') ?>">profile settings</a> or by contacting our support team. When you delete your account:</p>
     <ul>
         <li>Your profile information, chat history, and companion data will be permanently deleted within 30 days</li>
         <li>Payment records may be retained for up to 7 years as required by financial regulations</li>
@@ -225,7 +225,7 @@
     </ul>
 
     <h2>10. Children's Privacy</h2>
-    <p>Lush is not intended for use by anyone under the age of 18. We do not knowingly collect personal information from individuals under 18. If we learn that we have collected personal data from a minor, we will take immediate steps to delete that information. If you believe a minor has provided us with personal data, please contact us at <strong>privacy@lush.com</strong>.</p>
+    <p>Amorai is not intended for use by anyone under the age of 18. We do not knowingly collect personal information from individuals under 18. If we learn that we have collected personal data from a minor, we will take immediate steps to delete that information. If you believe a minor has provided us with personal data, please contact us at <strong>privacy@amorai.com</strong>.</p>
 
     <h2>11. International Data Transfers</h2>
     <p>Your data may be transferred to and processed in countries other than your country of residence. These countries may have different data protection laws. When we transfer data internationally, we implement appropriate safeguards to protect your information, including standard contractual clauses and other legally recognized transfer mechanisms.</p>
@@ -236,7 +236,7 @@
     <h2>13. Contact Us</h2>
     <p>If you have questions, concerns, or requests regarding this Privacy Policy or your personal data, please contact us at:</p>
     <p>
-        <strong>Email:</strong> privacy@lush.com<br>
-        <strong>Support:</strong> support@lush.com
+        <strong>Email:</strong> privacy@amorai.com<br>
+        <strong>Support:</strong> support@amorai.com
     </p>
 </div>

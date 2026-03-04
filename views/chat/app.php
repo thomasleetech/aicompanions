@@ -1,4 +1,4 @@
-<?php $pageTitle = 'Your Companions - Lush'; ?>
+<?php $pageTitle = 'Your Companions - Amorai'; ?>
 
 <section class="app-section">
     <div class="app-layout">

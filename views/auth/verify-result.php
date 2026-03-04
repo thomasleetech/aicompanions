@@ -1,4 +1,4 @@
-<?php $pageTitle = 'Email Verification - Lush'; ?>
+<?php $pageTitle = 'Email Verification - Amorai'; ?>
 
 <section class="auth-section">
     <div class="auth-card">

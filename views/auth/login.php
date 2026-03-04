@@ -1,4 +1,4 @@
-<?php $pageTitle = 'Log In - Lush'; ?>
+<?php $pageTitle = 'Log In - Amorai'; ?>
 
 <section class="auth-section">
     <div class="auth-card">
